@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://bw7m1lfymun70"]
+
+[node name="MainMenu" type="Node2D"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Game Outline" type="Label" parent="CanvasLayer"]
+offset_left = 20.0
+offset_top = 234.0
+offset_right = 1132.0
+offset_bottom = 413.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+text = "DICE BLOCK DUNGEONS
+Dungeon Crawler, Dice-Roller, Inventory Management Game
+
+Start with a 4x4 backpack
+Place item 'blocks' into your backpack, rotating as needed to make them fit.
+Each block has i) die slots, and ii) an action.
+On your turn, roll dice and place them into any of your blocks' die slots. Dice are 'consumed' when placed on a die slot. 
+To activate a block's action, you must place dice with a sum equal or greater than the value displayed on the block's dice slots.
+
+THE UNIQUE HOOKS:
+i) If you play a die with a value greater than required on a block, 
+the remaining value 'overflows' into any adjacent dice slots.
+ii) Blocks with more than 1 die slot overflow from all slots on the block.
+
+HAVE FUN!
+"
+horizontal_alignment = 1
+vertical_alignment = 1
