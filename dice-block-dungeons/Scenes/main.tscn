@@ -11,9 +11,9 @@
 [node name="BlockManager" type="Node2D" parent="."]
 script = ExtResource("1_s5g1a")
 
-[node name="Backpack" parent="." instance=ExtResource("1_i6rlt")]
+[node name="Backpack" parent="BlockManager" instance=ExtResource("1_i6rlt")]
 
-[node name="Block" parent="." instance=ExtResource("2_ign3n")]
+[node name="Block" parent="BlockManager" instance=ExtResource("2_ign3n")]
 
 [node name="UI" type="CanvasLayer" parent="."]
 
@@ -33,4 +33,5 @@ offset_right = 250.0
 offset_bottom = 130.0
 text = "Spawn Block"
 
-[connection signal="block_dropped" from="Block" to="Backpack" method="_on_block_block_dropped"]
+[connection signal="block_dropped" from="BlockManager/Block" to="BlockManager/Backpack" method="_on_block_block_dropped"]
+[connection signal="pressed" from="UI/Control/SpawnBlockButton" to="BlockManager" method="_on_spawn_block_button_pressed"]
