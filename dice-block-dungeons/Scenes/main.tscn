@@ -1,10 +1,12 @@
-[gd_scene load_steps=4 format=3 uid="uid://d3xqk4hlg4v6l"]
+[gd_scene load_steps=5 format=3 uid="uid://d3xqk4hlg4v6l"]
 
 [ext_resource type="PackedScene" uid="uid://dmgddsls2wgwn" path="res://Scenes/backpack.tscn" id="1_i6rlt"]
 [ext_resource type="Script" path="res://Scenes/block_manager.gd" id="1_s5g1a"]
+[ext_resource type="Script" path="res://Scenes/main.gd" id="1_uj771"]
 [ext_resource type="PackedScene" uid="uid://bx2yu5qw217ta" path="res://Scenes/block.tscn" id="2_ign3n"]
 
 [node name="Main" type="Node2D"]
+script = ExtResource("1_uj771")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 
@@ -33,5 +35,4 @@ offset_right = 250.0
 offset_bottom = 130.0
 text = "Spawn Block"
 
-[connection signal="block_dropped" from="BlockManager/Block" to="BlockManager/Backpack" method="_on_block_block_dropped"]
 [connection signal="pressed" from="UI/Control/SpawnBlockButton" to="BlockManager" method="_on_spawn_block_button_pressed"]

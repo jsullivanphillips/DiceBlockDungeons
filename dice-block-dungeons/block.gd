@@ -9,39 +9,56 @@ extends Node2D
 
 # So in summary, when we click to drop, just emit a signal. Do nothing else.
 
+class_name Block
 
+var camera : Camera2D
 
 var dragging: bool = false
 var offset: Vector2
 
-@onready var tilemap : TileMapLayer = $TileMapLayer2D
+@onready var tilemap : TileMapLayer = $"Z-Block-TileMapLayer"
 
-signal block_dropped(block_cells : Array[Vector2], block : Node2D)
-
-var click_offset : Vector2
+var offset_from_tile_zero : Vector2
 
 func _ready() -> void:
-	click_offset = $TileMapLayer2D.position * -1
+	camera = get_viewport().get_camera_2d()
+
+
+func _on_block_clicked(mouse_position : Vector2) -> Array[Vector2]:
+	print("clicked!")
+	if dragging:
+		return get_tile_global_positions()
+	else:
+		dragging = true   # Pick up the object
+		global_position = mouse_position
+		return [Vector2.ZERO]
+
+
+func pick_up(mouse_position : Vector2) -> void:
+	dragging = true   # Pick up the object
+	global_position = mouse_position
+
+
+func is_being_dragged() -> bool:
+	return dragging
+
+
+func drop_block() -> void:
+	dragging = false  # Drop the object
 
 
 func _input(event: InputEvent):
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				if dragging:
-					dragging = false  # Drop the object
-					block_dropped.emit(get_tile_positions(), self)
-				else:
-					if is_mouse_over():
-						dragging = true   # Pick up the object
-						offset = position - event.position
-		elif event.button_index == MOUSE_BUTTON_RIGHT and dragging:
+		if event.button_index == MOUSE_BUTTON_RIGHT and dragging:
 			if event.pressed:
 				rotation_degrees += 90  # Rotate the object 90 degrees clockwise
 	elif event is InputEventMouseMotion and dragging:
-		position = event.position + offset
+		var mouse_pos = camera.get_local_mouse_position()
+		global_position = mouse_pos
+		
 
-func get_tile_positions():
+
+func get_tile_global_positions() -> Array[Vector2]:
 	var tile_positions: Array[Vector2] = []  # Store tile world positions
 
 	if tilemap is TileMapLayer:
@@ -53,13 +70,5 @@ func get_tile_positions():
 	return tile_positions
 
 
-func is_mouse_over() -> bool:
-	# We add 64,64 because the tile map is offset from origin by -64, -64. 
-	# this value needs to be adjusted by the offset of the tile map from origin,
-	# which will change depending on the block.
-	var mouse_pos = tilemap.local_to_map(to_local(get_global_mouse_position() + click_offset))
-	for cell in tilemap.get_used_cells():
-		if mouse_pos == cell:
-			return true
-	
-	return false
+func set_global_position_with_offset(p_global_position : Vector2) -> void:
+	global_position = p_global_position
