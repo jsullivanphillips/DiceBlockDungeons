@@ -53,6 +53,9 @@ func select_topmost_object():
 				# minus the offset from the origin
 				block.set_global_position_with_offset(closest_backpack_tile_position + offset)
 				
+				# Set those backpack tiles to occupied
+				backpack.set_tiles_to_occupied(tile_positions)
+				
 			elif backpack.is_out_of_pack_bounds(block.global_position):
 				print("block center: ", block.global_position, " | mouse position: ", mouse_world_pos)
 				print("out of pack bounds!")
@@ -60,11 +63,14 @@ func select_topmost_object():
 				are_we_dragging_a_block = false
 			
 				
-		else: # Pick up block
+		elif not are_we_dragging_a_block: # Pick up block
+			var tile_positions : Array[Vector2] = block.get_tile_global_positions()
+			backpack.set_tiles_unoccupied(tile_positions)
 			block.pick_up(mouse_world_pos)
 			var block_manager = block.get_parent()
 			block_manager.move_child(block, -1)
 			are_we_dragging_a_block = true
+			
 
 	else:
 		print("No valid parent with on_selected() found")
