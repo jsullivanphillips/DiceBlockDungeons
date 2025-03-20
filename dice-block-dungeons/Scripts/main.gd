@@ -3,7 +3,6 @@ extends Node2D
 @onready var camera := $Camera2D
 @onready var block_manager := $BlockManager
 @onready var ui := $UI
-@export var coins = 4
 
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:

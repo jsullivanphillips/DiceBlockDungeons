@@ -10,12 +10,17 @@ var dragging: bool = false
 
 var is_slotted: bool
 
+func set_dice_values(die_value : int) -> void:
+	var used_cells = tilemap.get_used_cells()
+	for cell in used_cells:
+		if tilemap.get_cell_atlas_coords(cell).x > 0:
+			tilemap.set_cell(cell, 1, Vector2i(die_value, 0))
+
 
 func pick_up(mouse_position: Vector2):
 	picked_up.emit(self)
 	dragging = true
 	global_position = mouse_position
-	
 
 
 func drop_block():

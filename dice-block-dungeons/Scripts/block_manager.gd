@@ -1,6 +1,6 @@
 extends Node2D
 
-@onready var block_scene: PackedScene = preload("res://Scenes/block.tscn")
+@onready var block_scene: PackedScene = preload("res://Scenes/Blocks/block.tscn")
 @onready var backpack: Backpack = $Backpack
 
 @export var coins : int = 5
@@ -11,6 +11,7 @@ func _on_spawn_block_button_pressed():
 	var block = block_scene.instantiate()
 	add_child(block)
 	move_child(block, -1)
+	block.set_dice_values(randi_range(2,6))
 	# Connect signals when the block is created
 	block.picked_up.connect(_on_block_picked_up)
 	block.dropped.connect(_on_block_dropped)
