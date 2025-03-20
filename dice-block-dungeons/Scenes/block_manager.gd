@@ -3,6 +3,10 @@ extends Node2D
 @onready var block_scene: PackedScene = preload("res://Scenes/block.tscn")
 @onready var backpack: Backpack = $Backpack
 
+@export var coins : int = 5
+
+signal new_slot_purchaed(coins : int)
+
 func _on_spawn_block_button_pressed():
 	var block = block_scene.instantiate()
 	add_child(block)
@@ -22,7 +26,10 @@ func handle_mouse_click(mouse_pos: Vector2):
 	
 func handle_backpack_tile_clicked(mouse_pos: Vector2) -> void:
 	if backpack.is_position_add_new_block(mouse_pos):
-		backpack.add_new_block(mouse_pos)
+		if coins > 0:
+			backpack.add_new_block(mouse_pos)
+			coins -= 1
+			new_slot_purchaed.emit(coins)
 
 
 

@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://d3xqk4hlg4v6l"]
+[gd_scene load_steps=5 format=3 uid="uid://d3xqk4hlg4v6l"]
 
 [ext_resource type="PackedScene" uid="uid://dmgddsls2wgwn" path="res://Scenes/backpack.tscn" id="1_i6rlt"]
 [ext_resource type="Script" path="res://Scenes/block_manager.gd" id="1_s5g1a"]
 [ext_resource type="Script" path="res://Scenes/main.gd" id="1_uj771"]
+[ext_resource type="Script" path="res://Scenes/ui.gd" id="4_5srp6"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_uj771")
@@ -15,6 +16,7 @@ script = ExtResource("1_s5g1a")
 [node name="Backpack" parent="BlockManager" instance=ExtResource("1_i6rlt")]
 
 [node name="UI" type="CanvasLayer" parent="."]
+script = ExtResource("4_5srp6")
 
 [node name="Control" type="Control" parent="UI"]
 layout_mode = 3
@@ -41,5 +43,19 @@ offset_bottom = 130.0
 text = "Show Add Tiles
 "
 
+[node name="Coins" type="Label" parent="UI/Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -253.0
+offset_top = 39.0
+offset_right = -65.0
+offset_bottom = 108.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 50
+text = "Coins: 3"
+
+[connection signal="new_slot_purchaed" from="BlockManager" to="." method="_on_block_manager_new_slot_purchaed"]
 [connection signal="pressed" from="UI/Control/SpawnBlockButton" to="BlockManager" method="_on_spawn_block_button_pressed"]
 [connection signal="pressed" from="UI/Control/ShowAddTiles" to="BlockManager" method="_on_show_add_tiles_pressed"]
