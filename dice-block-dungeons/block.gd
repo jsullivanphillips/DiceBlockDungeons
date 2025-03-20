@@ -20,6 +20,8 @@ var offset: Vector2
 
 var offset_from_tile_zero : Vector2
 
+var is_slotted : bool
+
 func _ready() -> void:
 	camera = get_viewport().get_camera_2d()
 

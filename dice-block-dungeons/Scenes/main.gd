@@ -55,6 +55,7 @@ func select_topmost_object():
 				
 				# Set those backpack tiles to occupied
 				backpack.set_tiles_to_occupied(tile_positions)
+				block.is_slotted = true
 				
 			elif backpack.is_out_of_pack_bounds(block.global_position):
 				print("block center: ", block.global_position, " | mouse position: ", mouse_world_pos)
@@ -65,7 +66,9 @@ func select_topmost_object():
 				
 		elif not are_we_dragging_a_block: # Pick up block
 			var tile_positions : Array[Vector2] = block.get_tile_global_positions()
-			backpack.set_tiles_unoccupied(tile_positions)
+			if block.is_slotted:
+				backpack.set_tiles_unoccupied(tile_positions)
+				block.is_slotted = false
 			block.pick_up(mouse_world_pos)
 			var block_manager = block.get_parent()
 			block_manager.move_child(block, -1)

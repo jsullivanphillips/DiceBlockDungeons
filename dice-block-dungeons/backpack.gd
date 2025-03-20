@@ -28,22 +28,27 @@ func is_out_of_pack_bounds(block_origin : Vector2) -> bool:
 
 
 func are_spaces_empty(block_cells : Array[Vector2]) -> bool:
+	print("---")
 	for cell in block_cells:
 		var local_cell_position = tilemap.to_local(cell)
 		var tile_coord = tilemap.local_to_map(local_cell_position)
+		print(tile_coord, " is occupied = ", !is_tile_unoccupied(tile_coord))
 		if !is_tile_unoccupied(tile_coord):
 			return false
 	return true
 
 
 func set_tiles_to_occupied(block_cells : Array[Vector2]) -> void:
+	print("---")
 	for cell in block_cells:
 		var local_cell_position = tilemap.to_local(cell)
 		var tile_coord = tilemap.local_to_map(local_cell_position)
 		tilemap.set_cell(tile_coord, 1, OCCUPIED_ATLAS_CORD)
+		print(tile_coord, " is set to occupied")
 
 
 func set_tiles_unoccupied(block_cells : Array[Vector2]) -> void:
+	print("---")
 	for cell in block_cells:
 		var local_cell_position = tilemap.to_local(cell)
 		var tile_coord = tilemap.local_to_map(local_cell_position)
@@ -52,11 +57,12 @@ func set_tiles_unoccupied(block_cells : Array[Vector2]) -> void:
 			var atlas_coords = tilemap.get_cell_atlas_coords(tile_coord)
 			if atlas_coords == OCCUPIED_ATLAS_CORD:	
 				tilemap.set_cell(tile_coord, 1, EMPTY_ATLAS_COORD)
+				print(tile_coord, " is set to UNoccupied")
 
 
 func is_tile_unoccupied(tile_coord : Vector2i) -> bool:
-	var tile_id = tilemap.get_cell_source_id(tile_coord)  # Get tile ID at tilemap coordinate (x, y)
-	if tile_id == 1:
+	var source_id = tilemap.get_cell_source_id(tile_coord)  # Get tile ID at tilemap coordinate (x, y)
+	if source_id == 1:
 		var atlas_coords = tilemap.get_cell_atlas_coords(tile_coord)
 		if atlas_coords == EMPTY_ATLAS_COORD:
 			return true # Tile is empty
