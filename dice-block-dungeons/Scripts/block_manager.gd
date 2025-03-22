@@ -5,26 +5,53 @@ extends Node2D
 
 @export var coins : int = 5
 
+@onready var die_scene : PackedScene = preload("res://Scenes/die.tscn")
+
 signal new_slot_purchaed(coins : int)
 
+var selected_object = null
+
+# Main Entry Point
+func handle_mouse_click(mouse_pos: Vector2):
+	var topmost_object = get_topmost_object_at(mouse_pos)
+	if topmost_object != null:
+		if selected_object != null:
+			selected_object.drop_object()
+			selected_object = null
+		else:
+			selected_object = topmost_object
+			topmost_object.pick_up(mouse_pos)
+			move_child(topmost_object, -1)
+	handle_backpack_tile_clicked(mouse_pos)
+
+
+func _on_spawn_die_button_pressed() -> void:
+	var die = die_scene.instantiate()
+	add_child(die)
+	die.set_random_value()
+	die.die_dropped.connect(_on_die_dropped)
+
+	
 func _on_spawn_block_button_pressed():
 	var block = block_scene.instantiate()
 	add_child(block)
 	move_child(block, -1)
-	block.set_dice_values(randi_range(2,6))
+	block.set_dice_slots_default_value(randi_range(2,6))
 	# Connect signals when the block is created
 	block.picked_up.connect(_on_block_picked_up)
 	block.dropped.connect(_on_block_dropped)
+	block.slot_overflowed.connect(_on_slot_overflowed)
 
 
-func handle_mouse_click(mouse_pos: Vector2):
-	var topmost_block = get_topmost_block_at(mouse_pos)
-	if topmost_block:
-		handle_block_click(topmost_block, mouse_pos)
+func _on_slot_overflowed(overflow_value : int, slot_position : Vector2):
+	# get global positions of tiles adjacent to the tile
+	var adjacent_backpack_slots_global_positions = backpack.get_adjacent_backpack_slots_global_positions(slot_position)
 	
-	handle_backpack_tile_clicked(mouse_pos)
-	
-	
+	# Check if there are any tile slots in those locations
+	for g_position in adjacent_backpack_slots_global_positions:
+		die_dropped_at_position(g_position, overflow_value)
+
+
 func handle_backpack_tile_clicked(mouse_pos: Vector2) -> void:
 	if backpack.is_position_add_new_block(mouse_pos):
 		if coins > 0:
@@ -33,12 +60,27 @@ func handle_backpack_tile_clicked(mouse_pos: Vector2) -> void:
 			new_slot_purchaed.emit(coins)
 
 
+func get_topmost_object_at(mouse_pos: Vector2) -> Node2D:
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = mouse_pos
+	query.collide_with_bodies = true
+	query.collide_with_areas = true
 
-func handle_block_click(topmost_block : Block, mouse_pos : Vector2) -> void:
-	if topmost_block.is_being_dragged():
-		topmost_block.drop_block()
-	else:
-		topmost_block.pick_up(mouse_pos)
+	var results = space_state.intersect_point(query)
+	if results.is_empty():
+		return null
+
+	results.sort_custom(func(a, b): 
+		return (
+		(a.collider.is_in_group("Dice") and not b.collider.is_in_group("Dice")) or 
+		(a.collider.is_in_group("Dice") == b.collider.is_in_group("Dice") and a.collider.z_index > b.collider.z_index) or 
+		(a.collider.is_in_group("Dice") == b.collider.is_in_group("Dice") and a.collider.z_index == b.collider.z_index and a.collider.get_index() > b.collider.get_index())
+	))
+
+	var object = results[0].collider.get_parent()
+	return object if object and (object.is_in_group("Blocks") or object.is_in_group("Dice")) else null
+
 
 
 func get_topmost_block_at(mouse_pos: Vector2) -> Block:
@@ -55,8 +97,9 @@ func get_topmost_block_at(mouse_pos: Vector2) -> Block:
 	results.sort_custom(func(a, b): 
 		return (a.collider.z_index > b.collider.z_index) or (a.collider.z_index == b.collider.z_index and a.collider.get_index() > b.collider.get_index()))
 
-	var block = results[0].collider.get_parent()
-	return block if block and block.is_in_group("Blocks") else null
+	var object = results[0].collider.get_parent()
+
+	return object if object and object.is_in_group("Blocks") else null
 
 
 func _on_block_picked_up(block: Block):
@@ -80,6 +123,34 @@ func _on_block_dropped(block: Block):
 		block.pick_up(block.global_position)
 		block.is_slotted = false
 		print("Cannot drop block here!")
+
+
+func _on_die_dropped(die : Die) -> void:
+	var die_position = die.global_position
+	
+	var block_at_position = get_topmost_block_at(die_position)
+	var is_block_at_position = block_at_position is Block
+	var is_die_slot_at_position := false
+	
+	if is_block_at_position:
+		is_die_slot_at_position = block_at_position.is_position_a_die_slot(die_position)
+	
+	if is_die_slot_at_position and block_at_position.is_slotted:
+		block_at_position.die_placed_in_slot(die.value, die_position)
+		die.queue_free()
+
+
+func die_dropped_at_position(die_position : Vector2, value : int) -> void:
+	var block_at_position = get_topmost_block_at(die_position)
+	var is_block_at_position = block_at_position is Block
+	var is_die_slot_at_position := false
+	
+	if is_block_at_position:
+		is_die_slot_at_position = block_at_position.is_position_a_die_slot(die_position)
+	
+	if is_die_slot_at_position and block_at_position.is_slotted:
+		block_at_position.die_placed_in_slot(value, die_position)
+
 
 
 func _on_show_add_tiles_pressed() -> void:

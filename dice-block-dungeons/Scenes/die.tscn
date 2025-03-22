@@ -1,0 +1,29 @@
+[gd_scene load_steps=7 format=3 uid="uid://c8gvsqhcm7g2t"]
+
+[ext_resource type="Script" path="res://Scripts/die.gd" id="1_2eu57"]
+[ext_resource type="Shader" path="res://die.gdshader" id="1_nusfi"]
+[ext_resource type="Texture2D" uid="uid://b1d7ibatk6rfh" path="res://kenney_board-game-icons/Die Slots.png" id="2_0qade"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gu7nh"]
+shader = ExtResource("1_nusfi")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_id0re"]
+size = Vector2(122, 118)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vb07p"]
+shader = ExtResource("1_nusfi")
+
+[node name="Die" type="Node2D" groups=["Dice"]]
+material = SubResource("ShaderMaterial_gu7nh")
+script = ExtResource("1_2eu57")
+
+[node name="Area2D" type="Area2D" parent="." groups=["Dice"]]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" groups=["Dice"]]
+shape = SubResource("RectangleShape2D_id0re")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_vb07p")
+texture = ExtResource("2_0qade")
+hframes = 8
+frame = 1

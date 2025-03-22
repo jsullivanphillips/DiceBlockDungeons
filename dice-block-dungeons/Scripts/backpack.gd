@@ -9,9 +9,24 @@ const OCCUPIED_ATLAS_CORD = Vector2i(2, 7)
 const EMPTY_ATLAS_COORD = Vector2i(3, 7)
 const ADD_NEW_BLOCK_COORD = Vector2i(2, 8)
 
+var adjacent_directions = [
+	Vector2i(1, 0),  Vector2i(1, 1),  Vector2i(0, 1),  Vector2i(-1, 1),
+	Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, -1), Vector2i(1, -1)
+]
+
 func get_nearest_tile_global_position(global_pos: Vector2) -> Vector2:
 	var tile_coord = tilemap.local_to_map(tilemap.to_local(global_pos))
 	return tilemap.to_global(tilemap.map_to_local(tile_coord))
+
+
+func get_adjacent_backpack_slots_global_positions(p_global_pos: Vector2) -> Array[Vector2]:
+	var tile_coord_of_position = tilemap.local_to_map(tilemap.to_local(p_global_pos))
+	var adjacent_slots_global_positions : Array[Vector2] = []
+	for direction in adjacent_directions:
+		var new_tile_coord = tile_coord_of_position + direction
+		var new_tile_global_position = tilemap.to_global(tilemap.map_to_local(new_tile_coord))
+		adjacent_slots_global_positions.append(new_tile_global_position)
+	return adjacent_slots_global_positions
 
 
 func is_position_add_new_block(global_pos : Vector2) -> bool:
@@ -23,8 +38,15 @@ func is_position_add_new_block(global_pos : Vector2) -> bool:
 	return false
 
 
-func add_new_block(global_pos : Vector2) -> void:
-	var tile_coord = tilemap.local_to_map(tilemap.to_local(global_pos))
+func is_backpack_at_spot(p_global_pos : Vector2) -> bool:
+	var tile_coord = tilemap.local_to_map(tilemap.to_local(p_global_pos))
+	var tile_source_id = tilemap.get_cell_source_id(tile_coord)
+	return tile_source_id == 1
+		
+
+
+func add_new_block(p_global_pos : Vector2) -> void:
+	var tile_coord = tilemap.local_to_map(tilemap.to_local(p_global_pos))
 	tilemap.set_cell(tile_coord, 1, EMPTY_ATLAS_COORD)
 	hide_add_tiles()
 	show_add_tiles()
@@ -79,10 +101,7 @@ func hide_add_tiles() -> void:
 
 
 func show_add_tiles() -> void:
-	var directions = [
-		Vector2i(1, 0),  Vector2i(1, 1),  Vector2i(0, 1),  Vector2i(-1, 1),
-		Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, -1), Vector2i(1, -1)
-	]
+
 
 	# Get all currently occupied tiles
 	var used_tiles = tilemap.get_used_cells()  # Assuming layer 0, change if needed
@@ -90,7 +109,7 @@ func show_add_tiles() -> void:
 
 	# Find all empty perimeter tiles
 	for tile in used_tiles:
-		for direction in directions:
+		for direction in adjacent_directions:
 			var new_tile_coord = tile + direction
 			if tilemap.get_cell_source_id(new_tile_coord) == -1:  # Check if the tile is empty
 				perimeter_tiles[new_tile_coord] = true  # Store unique perimeter tiles
