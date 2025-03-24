@@ -36,20 +36,26 @@ func _on_spawn_block_button_pressed():
 	var block = block_scene.instantiate()
 	add_child(block)
 	move_child(block, -1)
-	block.set_dice_slots_default_value(randi_range(2,6))
+	var die_value = randi_range(2,6)
+	block.set_dice_slots_default_value(die_value)
+	block.name = "block " + str(die_value)
+	# Pick random colour
+	block.tilemap.modulate = Color.from_hsv(randf(), 0.7, 1.0) # Random hue, full saturation, full value
 	# Connect signals when the block is created
 	block.picked_up.connect(_on_block_picked_up)
 	block.dropped.connect(_on_block_dropped)
 	block.slot_overflowed.connect(_on_slot_overflowed)
 
 
-func _on_slot_overflowed(overflow_value : int, slot_position : Vector2):
+## TO DO: PASS BLOCK OBJECT INSTEAD OF SLOT POSITION TO THIS FUNCTION!!
+func _on_slot_overflowed(overflow_value : int, block : Block):
 	# get global positions of tiles adjacent to the tile
-	var adjacent_backpack_slots_global_positions = backpack.get_adjacent_backpack_slots_global_positions(slot_position)
+	var die_slots = block.get_die_slot_positions()
 	
-	# Check if there are any tile slots in those locations
-	for g_position in adjacent_backpack_slots_global_positions:
-		die_dropped_at_position(g_position, overflow_value)
+	for slot_position in die_slots:
+		var adjacent_backpack_slots_global_positions = backpack.get_adjacent_backpack_slots_global_positions(slot_position)
+		for g_position in adjacent_backpack_slots_global_positions:
+			die_dropped_at_position(g_position, overflow_value)
 
 
 func handle_backpack_tile_clicked(mouse_pos: Vector2) -> void:
@@ -75,11 +81,17 @@ func get_topmost_object_at(mouse_pos: Vector2) -> Node2D:
 		return (
 		(a.collider.is_in_group("Dice") and not b.collider.is_in_group("Dice")) or 
 		(a.collider.is_in_group("Dice") == b.collider.is_in_group("Dice") and a.collider.z_index > b.collider.z_index) or 
-		(a.collider.is_in_group("Dice") == b.collider.is_in_group("Dice") and a.collider.z_index == b.collider.z_index and a.collider.get_index() > b.collider.get_index())
+		(a.collider.is_in_group("Dice") == b.collider.is_in_group("Dice") and a.collider.z_index == b.collider.z_index and a.collider.get_index() < b.collider.get_index())
 	))
 
-	var object = results[0].collider.get_parent()
-	return object if object and (object.is_in_group("Blocks") or object.is_in_group("Dice")) else null
+	var topmost_object = results[0].collider.get_parent()
+	
+	var i = 0
+	for object in results:
+		print("[", i, "]: ", object.collider.get_parent())
+		i += 1
+	
+	return topmost_object if topmost_object and (topmost_object.is_in_group("Blocks") or topmost_object.is_in_group("Dice")) else null
 
 
 
@@ -136,7 +148,7 @@ func _on_die_dropped(die : Die) -> void:
 		is_die_slot_at_position = block_at_position.is_position_a_die_slot(die_position)
 	
 	if is_die_slot_at_position and block_at_position.is_slotted:
-		block_at_position.die_placed_in_slot(die.value, die_position)
+		block_at_position.die_placed_in_slot(die.value)
 		die.queue_free()
 
 
@@ -149,7 +161,7 @@ func die_dropped_at_position(die_position : Vector2, value : int) -> void:
 		is_die_slot_at_position = block_at_position.is_position_a_die_slot(die_position)
 	
 	if is_die_slot_at_position and block_at_position.is_slotted:
-		block_at_position.die_placed_in_slot(value, die_position)
+		block_at_position.die_placed_in_slot(value)
 
 
 
