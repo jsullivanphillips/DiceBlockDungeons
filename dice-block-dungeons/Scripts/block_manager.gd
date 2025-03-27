@@ -1,10 +1,11 @@
 extends Node2D
 
-@onready var block_scene: PackedScene = preload("res://Scenes/Blocks/block.tscn")
+
+@export var block_list: Array[PackedScene]
 @onready var backpack: Backpack = $Backpack
 
 @export var coins : int = 5
-
+@onready var textEdit := $"../UI/Control/TextEdit"
 @onready var die_scene : PackedScene = preload("res://Scenes/die.tscn")
 
 signal new_slot_purchaed(coins : int)
@@ -17,6 +18,8 @@ func handle_mouse_click(mouse_pos: Vector2):
 	if topmost_object != null:
 		if selected_object != null && !selected_object.is_locked:
 			selected_object.drop_object()
+			if selected_object is Block:
+				move_child(selected_object, 1)
 			selected_object = null
 		elif !topmost_object.is_locked:
 			selected_object = topmost_object
@@ -33,25 +36,38 @@ func _on_spawn_die_button_pressed() -> void:
 
 	
 func _on_spawn_block_button_pressed():
-	var block = block_scene.instantiate()
+	var block = block_list.pick_random().instantiate()
 	add_child(block)
 	move_child(block, -1)
-	var die_value = randi_range(2,6)
+	print(textEdit)
+	var input_text = textEdit.text.strip_edges()  # Remove leading/trailing spaces
+	print("input value ", input_text)
+	var die_value : int
+	if input_text.is_valid_int():
+		print("input is a valid int")
+		die_value = input_text.to_int()
+		
+		# Additional check if there's a valid range for die_value
+		if die_value < 1 or die_value > 6:  
+			die_value = randi_range(2,6) # Fallback default value if input is invalid
+			
+
+	print("setting block value to ", die_value)
 	block.set_dice_slots_default_value(die_value)
 	block.name = "block " + str(die_value)
 	# Pick random colour
-	block.tilemap.modulate = Color.from_hsv(randf(), 0.4, 1.0) # Random hue, full saturation, full value
+	block.tilemap.modulate = Color.from_hsv(randf(), 0.6, 0.9) # Random hue, full saturation, full value
 	# Connect signals when the block is created
 	block.picked_up.connect(_on_block_picked_up)
 	block.dropped.connect(_on_block_dropped)
 	block.slot_overflowed.connect(_on_slot_overflowed)
 
 
-## TO DO: PASS BLOCK OBJECT INSTEAD OF SLOT POSITION TO THIS FUNCTION!!
 func _on_slot_overflowed(overflow_value : int, block : Block):
 	# get global positions of tiles adjacent to the tile
 	var die_slots = block.get_die_slot_positions()
-	
+	## TODO: Need some way to tell when a die round is over. 
+	## Blocks should only be allowed to activate once per die round? No thats lame af. How do i deal with internal loops?
 	for slot_position in die_slots:
 		var adjacent_backpack_slots_global_positions = backpack.get_adjacent_backpack_slots_global_positions(slot_position)
 		for g_position in adjacent_backpack_slots_global_positions:

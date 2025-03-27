@@ -7,6 +7,8 @@ signal slot_overflowed(value : int, slot_positions : Array[Vector2])
 
 var is_locked : = false
 var dragging: bool = false
+
+
 @onready var camera: Camera2D = get_viewport().get_camera_2d()
 @onready var tilemap: TileMapLayer = $"Z-Block-TileMapLayer"
 
@@ -34,7 +36,10 @@ func set_dice_slots_default_value(die_value : int) -> void:
 
 func activate(die_slots : Array[Vector2i]) -> void:
 	var old_color = tilemap.modulate
-	tilemap.modulate = Color.WHITE
+	var modified_color = old_color
+	modified_color.s = 0.2
+	modified_color.v = 0.95
+	tilemap.modulate = modified_color
 	await get_tree().create_timer(0.5).timeout
 	tilemap.modulate = old_color
 	await get_tree().create_timer(0.25).timeout
@@ -72,13 +77,17 @@ func display_slotted_die(die_value: int) -> void:
 
 
 func die_placed_in_slot(die_value : int) -> void:
+	# If we are already counting down from a previous die, we should add this new value to the previous value.
+	# Die resolution really needs to happen in rounds. Timers make thigns get wacky and should only be used for display.
+	if is_locked:
+		return	
 	# die slotted feedback
 	is_locked = true
 	display_slotted_die(die_value)
 	var old_color = tilemap.modulate
 	var modified_color = old_color
-	modified_color.s = 0.6
-	modified_color.v = 0.8
+	modified_color.s = 0.8
+	modified_color.v = 0.6
 	tilemap.modulate = modified_color # increase saturation to 0.6 and reduce value to 0.8
 	await get_tree().create_timer(0.7).timeout
 	tilemap.modulate = old_color
@@ -87,7 +96,7 @@ func die_placed_in_slot(die_value : int) -> void:
 	var die_slots = get_die_slot_coordinates()
 	var overflow_value = die_value - dice_slots_value 
 	var overflow_delay = 0.0
-	var duration = 0.4
+	var duration = 0.6
 	var start_value = dice_slots_value # 1
 
 	if overflow_value < 0: 

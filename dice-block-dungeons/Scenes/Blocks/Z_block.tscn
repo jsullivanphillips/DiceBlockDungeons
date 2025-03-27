@@ -1,10 +1,10 @@
 [gd_scene load_steps=5 format=3 uid="uid://bx2yu5qw217ta"]
 
-[ext_resource type="Script" path="res://Scripts/block.gd" id="1_rbfbx"]
-[ext_resource type="Texture2D" uid="uid://b1d7ibatk6rfh" path="res://kenney_board-game-icons/Die Slots.png" id="2_3c2y2"]
+[ext_resource type="Script" path="res://Scripts/block.gd" id="1_s4s03"]
+[ext_resource type="Texture2D" uid="uid://b1d7ibatk6rfh" path="res://kenney_board-game-icons/Die Slots.png" id="2_e3t7w"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4ou4l"]
-texture = ExtResource("2_3c2y2")
+texture = ExtResource("2_e3t7w")
 texture_region_size = Vector2i(128, 128)
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-64, -64, 64, -64, 64, 64, -64, 64)
@@ -26,8 +26,8 @@ tile_size = Vector2i(128, 128)
 physics_layer_0/collision_layer = 1
 sources/1 = SubResource("TileSetAtlasSource_4ou4l")
 
-[node name="Block" type="Node2D" groups=["Blocks"]]
-script = ExtResource("1_rbfbx")
+[node name="Z_block" type="Node2D" groups=["Blocks"]]
+script = ExtResource("1_s4s03")
 
 [node name="Z-Block-TileMapLayer" type="TileMapLayer" parent="." groups=["Blocks"]]
 position = Vector2(-64, 0)

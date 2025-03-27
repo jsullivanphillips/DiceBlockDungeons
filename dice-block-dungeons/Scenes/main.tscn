@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://d3xqk4hlg4v6l"]
+[gd_scene load_steps=7 format=3 uid="uid://d3xqk4hlg4v6l"]
 
 [ext_resource type="PackedScene" uid="uid://dmgddsls2wgwn" path="res://Scenes/backpack.tscn" id="1_i6rlt"]
 [ext_resource type="Script" path="res://Scripts/block_manager.gd" id="1_s5g1a"]
 [ext_resource type="Script" path="res://Scripts/main.gd" id="1_uj771"]
+[ext_resource type="PackedScene" uid="uid://bx2yu5qw217ta" path="res://Scenes/Blocks/Z_block.tscn" id="3_6n4ac"]
 [ext_resource type="Script" path="res://Scripts/ui.gd" id="4_5srp6"]
+[ext_resource type="PackedScene" uid="uid://bb7par8edvujo" path="res://Scenes/Blocks/L_block.tscn" id="4_qk47n"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_uj771")
@@ -12,6 +14,7 @@ script = ExtResource("1_uj771")
 
 [node name="BlockManager" type="Node2D" parent="."]
 script = ExtResource("1_s5g1a")
+block_list = Array[PackedScene]([ExtResource("3_6n4ac"), ExtResource("4_qk47n")])
 
 [node name="Backpack" parent="BlockManager" instance=ExtResource("1_i6rlt")]
 
@@ -64,6 +67,14 @@ offset_bottom = 108.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 50
 text = "Coins: 3"
+
+[node name="TextEdit" type="TextEdit" parent="UI/Control"]
+layout_mode = 0
+offset_left = 58.0
+offset_top = 142.0
+offset_right = 234.0
+offset_bottom = 175.0
+placeholder_text = "Value for block 1-6"
 
 [connection signal="new_slot_purchaed" from="BlockManager" to="." method="_on_block_manager_new_slot_purchaed"]
 [connection signal="pressed" from="UI/Control/SpawnBlockButton" to="BlockManager" method="_on_spawn_block_button_pressed"]
