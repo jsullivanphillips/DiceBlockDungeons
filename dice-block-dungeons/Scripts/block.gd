@@ -5,9 +5,12 @@ signal picked_up(block)
 signal dropped(block)
 signal slot_overflowed(value : int, slot_positions : Array[Vector2])
 
+var is_locked : = false
 var dragging: bool = false
 @onready var camera: Camera2D = get_viewport().get_camera_2d()
 @onready var tilemap: TileMapLayer = $"Z-Block-TileMapLayer"
+
+@onready var die_scene : PackedScene = preload("res://Scenes/die.tscn")
 
 var is_slotted: bool
 
@@ -29,19 +32,62 @@ func set_dice_slots_default_value(die_value : int) -> void:
 			dice_slots_default_value = die_value
 
 
-func activate():
+func activate(die_slots : Array[Vector2i]) -> void:
 	var old_color = tilemap.modulate
 	tilemap.modulate = Color.WHITE
-	await get_tree().create_timer(0.6).timeout
+	await get_tree().create_timer(0.5).timeout
 	tilemap.modulate = old_color
+	await get_tree().create_timer(0.25).timeout
+	for cell in die_slots:
+		tilemap.set_cell(cell, 1, Vector2i(dice_slots_default_value, 0))
+		dice_slots_value = dice_slots_default_value
+	await get_tree().create_timer(0.5).timeout
+
+
+func display_slotted_die(die_value: int) -> void:
+	var die_slots = get_die_slot_positions()
+	var tweens = []
+
+	for die_slot in die_slots:
+		var die = die_scene.instantiate()
+		die.scale = Vector2(0.6,0.6)
+		add_child(die)
+		die.global_position = die_slot + Vector2(0, -100)
+		die.set_value(die_value)
+		
+		var target_position = die_slot + Vector2(0, -120)
+		var tween = get_tree().create_tween()
+		tween.tween_property(die, "global_position", target_position, 0.75).set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
+		
+		tweens.append(tween)
+
+	# Wait for all tweens to finish before destroying the dice
+	for tween in tweens:
+		await tween.finished
 	
+	# Destroy all created dice
+	for die in get_children():
+		if die is Die:  # Assuming 'Die' is the class name of the dice
+			die.queue_free()
 
 
 func die_placed_in_slot(die_value : int) -> void:
+	# die slotted feedback
+	is_locked = true
+	display_slotted_die(die_value)
+	var old_color = tilemap.modulate
+	var modified_color = old_color
+	modified_color.s = 0.6
+	modified_color.v = 0.8
+	tilemap.modulate = modified_color # increase saturation to 0.6 and reduce value to 0.8
+	await get_tree().create_timer(0.7).timeout
+	tilemap.modulate = old_color
+	await get_tree().create_timer(0.3).timeout
+
 	var die_slots = get_die_slot_coordinates()
 	var overflow_value = die_value - dice_slots_value 
-	var overflow_delay = 1
-	var duration = 0.5
+	var overflow_delay = 0.0
+	var duration = 0.4
 	var start_value = dice_slots_value # 1
 
 	if overflow_value < 0: 
@@ -72,7 +118,7 @@ func die_placed_in_slot(die_value : int) -> void:
 					tilemap.set_cell(cell, 1, Vector2i(current_value, 0))
 				await get_tree().create_timer(step_time).timeout
 			# Die slot has reached minimum value of 1
-			activate()
+			await activate(die_slots)
 			
 			# Reset die slot value to default value
 			for cell in die_slots:
@@ -83,15 +129,14 @@ func die_placed_in_slot(die_value : int) -> void:
 				await get_tree().create_timer(overflow_delay).timeout
 				slot_overflowed.emit(overflow_value, self)
 		else: 
-			activate()
+			await activate(die_slots)
 			# Reset die slot value to default value
-			for cell in die_slots:
-				tilemap.set_cell(cell, 1, Vector2i(dice_slots_default_value, 0))
-			dice_slots_value = dice_slots_default_value
+			
 			
 			if overflow_value > 0:
 				await get_tree().create_timer(overflow_delay).timeout
 				slot_overflowed.emit(overflow_value, self)
+	is_locked = false
 
 
 func get_die_slot_coordinates() -> Array[Vector2i]:

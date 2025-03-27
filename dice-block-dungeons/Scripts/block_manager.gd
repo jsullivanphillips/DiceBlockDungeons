@@ -15,10 +15,10 @@ var selected_object = null
 func handle_mouse_click(mouse_pos: Vector2):
 	var topmost_object = get_topmost_object_at(mouse_pos)
 	if topmost_object != null:
-		if selected_object != null:
+		if selected_object != null && !selected_object.is_locked:
 			selected_object.drop_object()
 			selected_object = null
-		else:
+		elif !topmost_object.is_locked:
 			selected_object = topmost_object
 			topmost_object.pick_up(mouse_pos)
 			move_child(topmost_object, -1)
@@ -40,7 +40,7 @@ func _on_spawn_block_button_pressed():
 	block.set_dice_slots_default_value(die_value)
 	block.name = "block " + str(die_value)
 	# Pick random colour
-	block.tilemap.modulate = Color.from_hsv(randf(), 0.7, 1.0) # Random hue, full saturation, full value
+	block.tilemap.modulate = Color.from_hsv(randf(), 0.4, 1.0) # Random hue, full saturation, full value
 	# Connect signals when the block is created
 	block.picked_up.connect(_on_block_picked_up)
 	block.dropped.connect(_on_block_dropped)

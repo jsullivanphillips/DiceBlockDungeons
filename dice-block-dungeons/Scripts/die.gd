@@ -6,6 +6,7 @@ var min_sprite_frame = 1
 var max_sprite_frame = 6
 
 var value = 1
+var is_locked : = false
 
 signal die_picked_up(block)
 signal die_dropped(block)
@@ -16,6 +17,11 @@ var dragging: bool = false
 func set_random_value() -> void:
 	value = randi_range(1,6)
 	sprite2d.set_frame(value)
+
+func set_value(p_value : int) -> void:
+	if p_value <= 6 and p_value > 0:
+		value = p_value
+		sprite2d.set_frame(value)
 
 
 func pick_up(mouse_position: Vector2):
