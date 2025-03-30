@@ -27,43 +27,38 @@ var dice_slots_value := 0
 ##
 func activate() -> void:
 	activated.emit(self)
+
 	var old_color = tilemap.modulate
 	var modified_color = old_color
 	modified_color.s = 0.2
 	modified_color.v = 0.95
-	tilemap.modulate = modified_color
-	await get_tree().create_timer(0.5).timeout
-	tilemap.modulate = old_color
-	await get_tree().create_timer(0.25).timeout
-	reset_to_default_values()
-	await get_tree().create_timer(0.5).timeout
 
+	var tween = get_tree().create_tween()
 
-func display_slotted_die(die_value: int) -> void:
-	var die_slots = get_die_slot_positions()
-	var tweens = []
-
-	for die_slot in die_slots:
-		var die = die_scene.instantiate()
-		die.scale = Vector2(0.6,0.6)
-		add_child(die)
-		die.global_position = die_slot + Vector2(0, -100)
-		die.set_value(die_value)
-		
-		var target_position = die_slot + Vector2(0, -120)
-		var tween = get_tree().create_tween()
-		tween.tween_property(die, "global_position", target_position, 0.75).set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
-		
-		tweens.append(tween)
-
-	# Wait for all tweens to finish before destroying the dice
-	for tween in tweens:
-		await tween.finished
+	# Step 1: Bright Flash + Scale Up (Pop Effect)
+	tween.tween_property(tilemap, "modulate", modified_color, 0.2) \
+		.set_trans(Tween.TRANS_CIRC) \
+		.set_ease(Tween.EASE_OUT)
 	
-	# Destroy all created dice
-	for die in get_children():
-		if die is Die:  # Assuming 'Die' is the class name of the dice
-			die.queue_free()
+	tween.parallel().tween_property(self, "scale", Vector2(1.15, 1.15), 0.2) \
+		.set_trans(Tween.TRANS_BACK) \
+		.set_ease(Tween.EASE_OUT)
+
+	await tween.finished
+
+	# Step 2: Subtle Return to Normal Color + Scale
+	var tween_back = get_tree().create_tween()
+	tween_back.tween_property(tilemap, "modulate", old_color, 0.4) \
+		.set_trans(Tween.TRANS_QUAD) \
+		.set_ease(Tween.EASE_IN_OUT)
+	
+	tween_back.parallel().tween_property(self, "scale", Vector2(1, 1), 0.3) \
+		.set_trans(Tween.TRANS_BOUNCE) \
+		.set_ease(Tween.EASE_OUT)
+
+	await tween_back.finished
+
+	reset_to_default_values()
 
 
 func change_color_to_darker():
@@ -71,10 +66,36 @@ func change_color_to_darker():
 	var modified_color = old_color
 	modified_color.s = 0.8
 	modified_color.v = 0.6
-	tilemap.modulate = modified_color # increase saturation to 0.6 and reduce value to 0.8
-	await get_tree().create_timer(0.7).timeout
-	tilemap.modulate = old_color
-	await get_tree().create_timer(0.3).timeout
+
+	var tween = get_tree().create_tween()
+
+	# Step 1: Flash to Darker Color with a Pop Effect
+	tween.tween_property(tilemap, "modulate", modified_color, 0.3)  # Smooth transition to darker
+	tween.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+
+	# Add a scale up for a "pop" effect (like Candy Crush!)
+	tween.parallel().tween_property(self, "scale", Vector2(1.1, 1.1), 0.3) \
+		.set_trans(Tween.TRANS_BACK) \
+		.set_ease(Tween.EASE_OUT)
+
+	await tween.finished
+
+	# Step 2: Bounce Back to Normal Color + Scale
+	var tween_back = get_tree().create_tween()
+
+	# Returning to original color smoothly
+	tween_back.tween_property(tilemap, "modulate", old_color, 0.5) \
+		.set_trans(Tween.TRANS_CUBIC) \
+		.set_ease(Tween.EASE_IN_OUT)
+
+	# Adding bounce back for extra fun when scaling down
+	tween_back.parallel().tween_property(self, "scale", Vector2(1, 1), 0.4) \
+		.set_trans(Tween.TRANS_BOUNCE) \
+		.set_ease(Tween.EASE_OUT)
+
+	await tween_back.finished
+
+
 
 
 func update_dice_slots_visuals(current_value : int):
@@ -96,7 +117,6 @@ func reset_to_default_values():
 func die_placed_in_slot(die_value : int) -> void:
 	is_locked = true
 	
-	display_slotted_die(die_value)
 	await change_color_to_darker()
 
 	var start_value = dice_slots_value
@@ -110,9 +130,7 @@ func die_placed_in_slot(die_value : int) -> void:
 			await get_tree().create_timer(duration).timeout
 		
 	if end_value == 0:
-		print("Before Activation: ", tilemap.get_used_cells().size())
 		await activate()
-		print("After Activation: ", tilemap.get_used_cells().size())
 		overflow_value = max(0, overflow_value)
 		reset_to_default_values()
 	else:

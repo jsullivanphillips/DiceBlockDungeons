@@ -23,10 +23,17 @@ var overflow_queue : Array[Array] = [] #Holds overflow info for next processing 
 func handle_mouse_click(mouse_pos: Vector2):
 	var topmost_object = get_topmost_object_at(mouse_pos)
 	if topmost_object != null:
-		if selected_object != null && !selected_object.is_locked:
+		if selected_object != null && !animations_playing:
 			selected_object.drop_object()
 			selected_object = null
-		elif !topmost_object.is_locked:
+		elif selected_object != null && animations_playing && selected_object is Die:
+			selected_object.drop_object()
+			selected_object = null
+		elif !topmost_object.is_locked && !animations_playing:
+			selected_object = topmost_object
+			topmost_object.pick_up(mouse_pos)
+			move_child(topmost_object, -1)
+		elif !topmost_object.is_locked && animations_playing && topmost_object is Die:
 			selected_object = topmost_object
 			topmost_object.pick_up(mouse_pos)
 			move_child(topmost_object, -1)
@@ -181,6 +188,35 @@ func die_dropped_at_position(die_position : Vector2, value : int) -> void:
 	return
 
 
+func display_slotted_die(die_value: int, die_slots : Array[Vector2]) -> void:
+	var tweens = []
+	var duration = 1
+	var created_dice = []  # List to track the dice created in this function
+
+	for die_slot in die_slots:
+		var die = die_scene.instantiate()
+		die.scale = Vector2(0.7, 0.7)
+		add_child(die)
+		die.global_position = die_slot + Vector2(0, -100)
+		die.set_value(die_value)
+		
+		var target_position = die_slot + Vector2(0, -120)
+		var tween = get_tree().create_tween()
+		tween.tween_property(die, "global_position", target_position, duration).set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
+		
+		tweens.append(tween)
+		created_dice.append(die)  # Track the created dice
+
+	# Wait for all tweens to finish before destroying the dice
+	for tween in tweens:
+		await tween.finished
+	
+	# Destroy only the dice created by this function
+	for die in created_dice:
+		die.queue_free()
+
+
+
 
 ##
 ## Dice Dropping, Activation, and Overflow
@@ -198,6 +234,7 @@ func process_die_drop(blocks_and_values: Array[Array]) -> void:
 		
 		# Start countdown animation
 		block.die_placed_in_slot(die_value)
+		display_slotted_die(die_value, block.get_die_slot_positions())
 	
 	# Wait until all blocks finish for proceeding
 	while active_blocks:
