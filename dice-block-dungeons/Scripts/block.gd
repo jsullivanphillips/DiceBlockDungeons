@@ -3,7 +3,9 @@ class_name Block
 
 signal picked_up(block)
 signal dropped(block)
-signal slot_overflowed(value : int, slot_positions : Array[Vector2])
+signal activated(block)
+
+signal countdown_complete(block : Block, overflow_value : int)
 
 var is_locked : = false
 var dragging: bool = false
@@ -19,22 +21,12 @@ var is_slotted: bool
 var dice_slots_default_value := 0
 var dice_slots_value := 0
 
-func set_dice_slots(die_value: int) -> void:
-	var die_slots = get_die_slot_coordinates()
-	for slot in die_slots:
-		tilemap.set_cell(slot, 1, Vector2i(die_value, 0))
 
-
-func set_dice_slots_default_value(die_value : int) -> void:
-	var used_cells = tilemap.get_used_cells()
-	for cell in used_cells:
-		if tilemap.get_cell_atlas_coords(cell).x > 0:
-			tilemap.set_cell(cell, 1, Vector2i(die_value, 0))
-			dice_slots_value = die_value
-			dice_slots_default_value = die_value
-
-
-func activate(die_slots : Array[Vector2i]) -> void:
+##
+## Display
+##
+func activate() -> void:
+	activated.emit(self)
 	var old_color = tilemap.modulate
 	var modified_color = old_color
 	modified_color.s = 0.2
@@ -43,9 +35,7 @@ func activate(die_slots : Array[Vector2i]) -> void:
 	await get_tree().create_timer(0.5).timeout
 	tilemap.modulate = old_color
 	await get_tree().create_timer(0.25).timeout
-	for cell in die_slots:
-		tilemap.set_cell(cell, 1, Vector2i(dice_slots_default_value, 0))
-		dice_slots_value = dice_slots_default_value
+	reset_to_default_values()
 	await get_tree().create_timer(0.5).timeout
 
 
@@ -76,14 +66,7 @@ func display_slotted_die(die_value: int) -> void:
 			die.queue_free()
 
 
-func die_placed_in_slot(die_value : int) -> void:
-	# If we are already counting down from a previous die, we should add this new value to the previous value.
-	# Die resolution really needs to happen in rounds. Timers make thigns get wacky and should only be used for display.
-	if is_locked:
-		return	
-	# die slotted feedback
-	is_locked = true
-	display_slotted_die(die_value)
+func change_color_to_darker():
 	var old_color = tilemap.modulate
 	var modified_color = old_color
 	modified_color.s = 0.8
@@ -93,59 +76,71 @@ func die_placed_in_slot(die_value : int) -> void:
 	tilemap.modulate = old_color
 	await get_tree().create_timer(0.3).timeout
 
+
+func update_dice_slots_visuals(current_value : int):
 	var die_slots = get_die_slot_coordinates()
-	var overflow_value = die_value - dice_slots_value 
-	var overflow_delay = 0.0
+	for cell in die_slots:
+		tilemap.set_cell(cell, 1, Vector2i(current_value, 0))
+
+
+## Internal Logic
+func reset_to_default_values():
+	var die_slots = get_die_slot_coordinates()
+	for cell in die_slots:
+		tilemap.set_cell(cell, 1, Vector2i(dice_slots_default_value, 0))
+		dice_slots_value = dice_slots_default_value
+	
+
+
+
+func die_placed_in_slot(die_value : int) -> void:
+	is_locked = true
+	
+	display_slotted_die(die_value)
+	await change_color_to_darker()
+
+	var start_value = dice_slots_value
+	var end_value = max(0, start_value - die_value)
+	var overflow_value = die_value - (start_value - end_value)
 	var duration = 0.6
-	var start_value = dice_slots_value # 1
-
-	if overflow_value < 0: 
-		var end_value = dice_slots_value - die_value
-		var step_count = abs(start_value - end_value) 
-
-		# Avoid division by zero if start and end values are the same
-		if step_count > 0:
-			var step_time = duration
-			# Iterate through each value between start_value and end_value
-			for current_value in range(start_value - 1, end_value - 1, -1):  # Step downwards
-				for cell in die_slots:
-					tilemap.set_cell(cell, 1, Vector2i(current_value, 0))
-				await get_tree().create_timer(step_time).timeout
-		else:
-			for cell in die_slots:
-				tilemap.set_cell(cell, 1, Vector2i(end_value, 0))
-		dice_slots_value = end_value
+	
+	for current_value in range(start_value - 1, end_value-1, -1):  # Step downwards
+		if current_value > 0:
+			update_dice_slots_visuals(current_value)
+			await get_tree().create_timer(duration).timeout
+		
+	if end_value == 0:
+		print("Before Activation: ", tilemap.get_used_cells().size())
+		await activate()
+		print("After Activation: ", tilemap.get_used_cells().size())
+		overflow_value = max(0, overflow_value)
+		reset_to_default_values()
 	else:
-		var end_value = 1 # 1
-		var step_count = abs(start_value - end_value) # Ensure positive step count
-		# Avoid division by zero if start and end values are the same
-		if step_count > 0:
-			var step_time = duration
-			# Iterate through each value between start_value and end_value
-			for current_value in range(start_value - 1, end_value - 1, -1):  # Step downwards
-				for cell in die_slots:
-					tilemap.set_cell(cell, 1, Vector2i(current_value, 0))
-				await get_tree().create_timer(step_time).timeout
-			# Die slot has reached minimum value of 1
-			await activate(die_slots)
-			
-			# Reset die slot value to default value
-			for cell in die_slots:
-				tilemap.set_cell(cell, 1, Vector2i(dice_slots_default_value, 0))
-			dice_slots_value = dice_slots_default_value
-			
-			if overflow_value > 0:
-				await get_tree().create_timer(overflow_delay).timeout
-				slot_overflowed.emit(overflow_value, self)
-		else: 
-			await activate(die_slots)
-			# Reset die slot value to default value
-			
-			
-			if overflow_value > 0:
-				await get_tree().create_timer(overflow_delay).timeout
-				slot_overflowed.emit(overflow_value, self)
+		dice_slots_value = end_value
+	
+	
+	countdown_complete.emit(self, overflow_value)
+	
 	is_locked = false
+
+
+##
+## API Stuff 
+##
+func set_dice_slots(die_value: int) -> void:
+	var die_slots = get_die_slot_coordinates()
+	for slot in die_slots:
+		tilemap.set_cell(slot, 1, Vector2i(die_value, 0))
+
+
+func set_dice_slots_default_value(die_value : int) -> void:
+	var used_cells = tilemap.get_used_cells()
+	for cell in used_cells:
+		if tilemap.get_cell_source_id(cell) == 1:
+			if tilemap.get_cell_atlas_coords(cell).x > 0:
+				tilemap.set_cell(cell, 1, Vector2i(die_value, 0))
+				dice_slots_value = die_value
+				dice_slots_default_value = die_value
 
 
 func get_die_slot_coordinates() -> Array[Vector2i]:
@@ -161,7 +156,6 @@ func get_die_slot_coordinates() -> Array[Vector2i]:
 func get_die_slot_positions() -> Array[Vector2]:
 	var used_tiles = tilemap.get_used_cells()
 	var die_slot_positions : Array[Vector2] = []
-	
 	for tile in used_tiles:
 		if is_coord_a_die_slot(tile):
 			die_slot_positions.append(get_coord_global_position(tile))
@@ -177,6 +171,7 @@ func get_tile_global_positions() -> Array[Vector2]:
 	var tile_positions: Array[Vector2]
 	for cell in tilemap.get_used_cells():
 		tile_positions.append(tilemap.to_global(tilemap.map_to_local(cell)))
+	print("tile_positions: ", tile_positions)
 	return tile_positions
 
 

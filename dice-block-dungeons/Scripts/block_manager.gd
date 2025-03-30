@@ -11,6 +11,10 @@ extends Node2D
 signal new_slot_purchaed(coins : int)
 
 var selected_object = null
+var animations_playing : bool = false
+
+var active_blocks : Array = [] # Blocks currently processing
+var overflow_queue : Array[Array] = [] #Holds overflow info for next processing round
 
 ##
 ## GENERAL SECTION
@@ -21,8 +25,6 @@ func handle_mouse_click(mouse_pos: Vector2):
 	if topmost_object != null:
 		if selected_object != null && !selected_object.is_locked:
 			selected_object.drop_object()
-			if selected_object is Block:
-				move_child(selected_object, 1)
 			selected_object = null
 		elif !topmost_object.is_locked:
 			selected_object = topmost_object
@@ -50,11 +52,6 @@ func get_topmost_object_at(mouse_pos: Vector2) -> Node2D:
 	))
 
 	var topmost_object = results[0].collider.get_parent()
-	
-	var i = 0
-	for object in results:
-		print("[", i, "]: ", object.collider.get_parent())
-		i += 1
 	
 	return topmost_object if topmost_object and (topmost_object.is_in_group("Blocks") or topmost_object.is_in_group("Dice")) else null
 
@@ -84,20 +81,17 @@ func _on_spawn_block_button_pressed():
 	var block = block_list.pick_random().instantiate()
 	add_child(block)
 	move_child(block, -1)
-	print(textEdit)
 	var input_text = textEdit.text.strip_edges()  # Remove leading/trailing spaces
-	print("input value ", input_text)
 	var die_value : int
 	if input_text.is_valid_int():
-		print("input is a valid int")
 		die_value = input_text.to_int()
 		
 		# Additional check if there's a valid range for die_value
 		if die_value < 1 or die_value > 6:  
 			die_value = randi_range(2,6) # Fallback default value if input is invalid
-			
+	else:
+		die_value = randi_range(2,6) 
 
-	print("setting block value to ", die_value)
 	block.set_dice_slots_default_value(die_value)
 	block.name = "block " + str(die_value)
 	# Pick random colour
@@ -105,18 +99,6 @@ func _on_spawn_block_button_pressed():
 	# Connect signals when the block is created
 	block.picked_up.connect(_on_block_picked_up)
 	block.dropped.connect(_on_block_dropped)
-	block.slot_overflowed.connect(_on_slot_overflowed)
-
-
-func _on_slot_overflowed(overflow_value : int, block : Block):
-	# get global positions of tiles adjacent to the tile
-	var die_slots = block.get_die_slot_positions()
-	## TODO: Need some way to tell when a die round is over. 
-	## Blocks should only be allowed to activate once per die round? No thats lame af. How do i deal with internal loops?
-	for slot_position in die_slots:
-		var adjacent_backpack_slots_global_positions = backpack.get_adjacent_backpack_slots_global_positions(slot_position)
-		for g_position in adjacent_backpack_slots_global_positions:
-			die_dropped_at_position(g_position, overflow_value)
 
 
 func get_topmost_block_at(mouse_pos: Vector2) -> Block:
@@ -181,13 +163,8 @@ func _on_die_dropped(die : Die) -> void:
 	if is_block_at_position:
 		is_die_slot_at_position = block_at_position.is_position_a_die_slot(die_position)
 	
-	if is_die_slot_at_position and block_at_position.is_slotted:
-		## The resolution of die in slot placement should happen in rounds
-		## outside of the block script. The rounds should be calculated and
-		## resolved within block_manager. Block script should only be
-		## used for the visual updates.
-		block_at_position.die_placed_in_slot(die.value)
-		die.queue_free()
+	if is_die_slot_at_position and block_at_position.is_slotted and not animations_playing:
+		drop_die_in_slot(die, block_at_position)
 
 
 func die_dropped_at_position(die_position : Vector2, value : int) -> void:
@@ -199,4 +176,103 @@ func die_dropped_at_position(die_position : Vector2, value : int) -> void:
 		is_die_slot_at_position = block_at_position.is_position_a_die_slot(die_position)
 	
 	if is_die_slot_at_position and block_at_position.is_slotted:
-		block_at_position.die_placed_in_slot(value)
+		await block_at_position.die_placed_in_slot(value)
+	
+	return
+
+
+
+##
+## Dice Dropping, Activation, and Overflow
+##
+func process_die_drop(blocks_and_values: Array[Array]) -> void:
+	# Register blocks for countdown
+	for tuple in blocks_and_values:
+		var block: Block = tuple[0]
+		var die_value: int = tuple[1]
+		active_blocks.append(block)
+		
+		# Connect signal if not already connected
+		if not block.countdown_complete.is_connected(_on_block_countdown_complete):
+			block.countdown_complete.connect(_on_block_countdown_complete)
+		
+		# Start countdown animation
+		block.die_placed_in_slot(die_value)
+	
+	# Wait until all blocks finish for proceeding
+	while active_blocks:
+		await get_tree().process_frame # Yield until next frame
+	
+	if overflow_queue:
+		await process_overflow()
+	else:
+		print("no overflows to process")
+		animations_playing = false
+
+
+func _on_block_countdown_complete(block: Block, overflow_value: int) -> void:
+	active_blocks.erase(block) # Remove block from active processing
+	# Determine where overflow should go
+	if overflow_value > 0:
+		var blocks_with_adjacent_slots = get_blocks_with_adjacent_slots(block)
+		for target_block in blocks_with_adjacent_slots:
+			var exists_in_queue = false
+			
+			for i in range(overflow_queue.size()):
+				var queued_block = overflow_queue[i][0]
+				var queued_value = overflow_queue[i][1]
+				
+				if queued_block == target_block:
+					exists_in_queue = true
+					# If the new overflow value is greater, replace it
+					if overflow_value > queued_value:
+						overflow_queue[i][1] = overflow_value
+					break  # No need to continue checking
+					
+			# If the block wasn't in the queue, add it
+			if not exists_in_queue:
+				overflow_queue.append([target_block, overflow_value])
+
+
+func get_blocks_with_adjacent_slots(block : Block) -> Array[Block]:
+	var die_slots = block.get_die_slot_positions()
+	var target_blocks: Array[Block] = []
+	for slot_position in die_slots:
+		var adjacent_backpack_slots_global_positions = backpack.get_adjacent_backpack_slots_global_positions(slot_position)
+		for g_position in adjacent_backpack_slots_global_positions:
+			var block_at_position = get_topmost_block_at(g_position)
+			var is_block_at_position = block_at_position is Block
+			var is_die_slot_at_position := false
+			
+			if is_block_at_position:
+				is_die_slot_at_position = block_at_position.is_position_a_die_slot(g_position)
+			
+			if is_die_slot_at_position and block_at_position.is_slotted:
+				if block_at_position not in target_blocks:
+					target_blocks.append(block_at_position)
+	return target_blocks
+
+
+func process_overflow() -> void:
+	if overflow_queue.is_empty():
+		print("overflow queue empty")
+		animations_playing = false
+		return # no more rounds needed
+	
+	# Move overflow queue to new round
+	var new_round = overflow_queue.duplicate()
+	overflow_queue.clear()
+	
+	# Start new round
+	await process_die_drop(new_round)
+
+
+func drop_die_in_slot(die : Die, block : Block):
+	animations_playing = true
+	var die_value = die.value
+	die.queue_free()
+	
+	var initial_round: Array[Array]
+	initial_round.append([block, die_value])
+	process_die_drop(initial_round)
+		

@@ -42,7 +42,6 @@ func is_backpack_at_spot(p_global_pos : Vector2) -> bool:
 	var tile_coord = tilemap.local_to_map(tilemap.to_local(p_global_pos))
 	var tile_source_id = tilemap.get_cell_source_id(tile_coord)
 	return tile_source_id == 1
-		
 
 
 func add_new_block(p_global_pos : Vector2) -> void:
@@ -61,6 +60,7 @@ func are_spaces_empty(block_cells: Array[Vector2]) -> bool:
 	for cell in block_cells:
 		var tile_coord = tilemap.local_to_map(tilemap.to_local(cell))
 		if !is_tile_unoccupied(tile_coord):
+			print("backpack tile ", tile_coord, " is taken")
 			return false
 	return true
 
