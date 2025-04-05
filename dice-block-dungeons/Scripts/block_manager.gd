@@ -1,11 +1,13 @@
 extends Node2D
 
-
 @export var block_list: Array[PackedScene]
+@export var block_types : Array[BlockResource]
 @onready var backpack: Backpack = $Backpack
+@onready var battle_manager := $"../BattleManager"
 
 @export var coins : int = 5
-@onready var textEdit := $"../UI/Control/TextEdit"
+@onready var textEdit := $"../UI/TestingInterface/TextEdit"
+@onready var diceTextEdit := $"../UI/TestingInterface/DiceTextEdit"
 @onready var die_scene : PackedScene = preload("res://Scenes/die.tscn")
 
 signal new_slot_purchaed(coins : int)
@@ -85,6 +87,8 @@ func handle_backpack_tile_clicked(mouse_pos: Vector2) -> void:
 ## BLOCK SECTION
 ##
 func _on_spawn_block_button_pressed():
+	# TODO: Build blocks in tile map from block type resource
+	# var block_type = block_types.pick_random()
 	var block = block_list.pick_random().instantiate()
 	add_child(block)
 	move_child(block, -1)
@@ -106,6 +110,7 @@ func _on_spawn_block_button_pressed():
 	# Connect signals when the block is created
 	block.picked_up.connect(_on_block_picked_up)
 	block.dropped.connect(_on_block_dropped)
+	block.activated.connect(battle_manager._block_activated)
 
 
 func get_topmost_block_at(mouse_pos: Vector2) -> Block:
@@ -142,7 +147,6 @@ func _on_block_dropped(block: Block):
 		var offset = block.global_position - tile_positions[0]
 		block.global_position = snap_pos + offset
 		backpack.set_tiles_to_occupied(tile_positions)
-		print("dropping block")
 		block.is_slotted = true
 	else:
 		block.pick_up(block.global_position)
@@ -155,8 +159,20 @@ func _on_block_dropped(block: Block):
 ##
 func _on_spawn_die_button_pressed() -> void:
 	var die = die_scene.instantiate()
+	
+	var input_text = diceTextEdit.text.strip_edges()  # Remove leading/trailing spaces
+	var die_value : int
+	if input_text.is_valid_int():
+		die_value = input_text.to_int()
+		
+		# Additional check if there's a valid range for die_value
+		if die_value < 1 or die_value > 6:  
+			die_value = randi_range(2,6) # Fallback default value if input is invalid
+	else:
+		die_value = randi_range(2,6) 
+
 	add_child(die)
-	die.set_random_value()
+	die.set_value(die_value)
 	die.die_dropped.connect(_on_die_dropped)
 
 
@@ -243,7 +259,6 @@ func process_die_drop(blocks_and_values: Array[Array]) -> void:
 	if overflow_queue:
 		await process_overflow()
 	else:
-		print("no overflows to process")
 		animations_playing = false
 
 
@@ -251,11 +266,12 @@ func _on_block_countdown_complete(block: Block, overflow_value: int) -> void:
 	active_blocks.erase(block) # Remove block from active processing
 	# Determine where overflow should go
 	if overflow_value > 0:
-		var blocks_with_adjacent_slots = get_blocks_with_adjacent_slots(block)
+		var blocks_with_adjacent_slots = get_blocks_with_cardinal_adjacent_slots(block)
 		for target_block in blocks_with_adjacent_slots:
 			var exists_in_queue = false
 			
 			for i in range(overflow_queue.size()):
+				
 				var queued_block = overflow_queue[i][0]
 				var queued_value = overflow_queue[i][1]
 				
@@ -289,10 +305,27 @@ func get_blocks_with_adjacent_slots(block : Block) -> Array[Block]:
 					target_blocks.append(block_at_position)
 	return target_blocks
 
+func get_blocks_with_cardinal_adjacent_slots(block : Block) -> Array[Block]:
+	var die_slots = block.get_die_slot_positions()
+	var target_blocks: Array[Block] = []
+	for slot_position in die_slots:
+		var adjacent_backpack_slots_global_positions = backpack.get_cardinal_adjacent_backpack_slots_global_positions(slot_position)
+		for g_position in adjacent_backpack_slots_global_positions:
+			var block_at_position = get_topmost_block_at(g_position)
+			var is_block_at_position = block_at_position is Block
+			var is_die_slot_at_position := false
+			
+			if is_block_at_position:
+				is_die_slot_at_position = block_at_position.is_position_a_die_slot(g_position)
+			
+			if is_die_slot_at_position and block_at_position.is_slotted:
+				if block_at_position not in target_blocks:
+					target_blocks.append(block_at_position)
+	return target_blocks
+
 
 func process_overflow() -> void:
 	if overflow_queue.is_empty():
-		print("overflow queue empty")
 		animations_playing = false
 		return # no more rounds needed
 	

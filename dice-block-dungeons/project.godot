@@ -13,6 +13,10 @@ config_version=5
 config/name="Dice Block Dungeons"
 config/features=PackedStringArray("4.3", "Forward Plus")
 
+[autoload]
+
+BlockType="*res://Scripts/BlockType.gd"
+
 [display]
 
 window/size/viewport_width=1920
