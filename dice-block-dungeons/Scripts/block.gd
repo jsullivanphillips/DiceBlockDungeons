@@ -14,7 +14,7 @@ var dragging: bool = false
 @export var block_type := BlockType.BlockTypes.ATTACK
 
 @onready var camera: Camera2D = get_viewport().get_camera_2d()
-@onready var tilemap: TileMapLayer = $"Z-Block-TileMapLayer"
+@onready var tilemap: TileMapLayer = $TileMapLayer
 @onready var die_scene : PackedScene = preload("res://Scenes/die.tscn")
 
 var is_slotted: bool
@@ -22,6 +22,36 @@ var is_slotted: bool
 var dice_slots_default_value := 0
 var dice_slots_value := 0
 
+@export var damage_value = 0
+@export var block_value = 0
+@onready var stat_label = $Label
+
+@onready var damage_block_cost : Array = [
+	{"damage": 3, "block": 0, "cost": 5},
+	{"damage": 0, "block": 2, "cost": 3},
+	{"damage": 2, "block": 0, "cost": 4},
+	{"damage": 1, "block": 0, "cost": 2},
+	{"damage": 0, "block": 3, "cost": 4},
+]
+
+func _ready() -> void:
+	var stats = damage_block_cost.pick_random()
+	damage_value = stats["damage"]
+	block_value = stats["block"]
+	set_dice_slots_default_value(stats["cost"])
+	
+	
+	if damage_value > 0:
+		stat_label.text = str(damage_value) + " dmg"
+	elif block_value > 0:
+		stat_label.text = str(block_value) + "blk"
+	else:
+		stat_label.text = ""
+	
+	if damage_value > 0:
+		tilemap.modulate = Color.from_hsv(0, 0.6, 0.9)
+	elif block_value > 0:
+		tilemap.modulate = Color.from_hsv(0.6, 0.6, 0.9)
 
 ##
 ## DISPLAY FUNCTIONS

@@ -1,24 +1,28 @@
-[gd_scene load_steps=11 format=3 uid="uid://d3xqk4hlg4v6l"]
+[gd_scene load_steps=14 format=3 uid="uid://d3xqk4hlg4v6l"]
 
 [ext_resource type="PackedScene" uid="uid://dmgddsls2wgwn" path="res://Scenes/backpack.tscn" id="1_i6rlt"]
 [ext_resource type="Script" path="res://Scripts/block_manager.gd" id="1_s5g1a"]
 [ext_resource type="Script" path="res://Scripts/main.gd" id="1_uj771"]
 [ext_resource type="PackedScene" uid="uid://bx2yu5qw217ta" path="res://Scenes/Blocks/Z_block.tscn" id="3_6n4ac"]
-[ext_resource type="Script" path="res://Scripts/ui.gd" id="4_5srp6"]
 [ext_resource type="PackedScene" uid="uid://bb7par8edvujo" path="res://Scenes/Blocks/L_block.tscn" id="4_qk47n"]
+[ext_resource type="PackedScene" uid="uid://cjc0kwnpitsub" path="res://Scenes/Blocks/Corner_block.tscn" id="5_6dpdr"]
 [ext_resource type="Script" path="res://Scripts/BlockResource.gd" id="5_grs55"]
 [ext_resource type="Script" path="res://Scripts/dice_manager.gd" id="6_afjnp"]
+[ext_resource type="PackedScene" uid="uid://cabq2awm56sds" path="res://Scenes/Blocks/ThreeLine_block.tscn" id="6_d8dfa"]
 [ext_resource type="Resource" uid="uid://c78e4u5lcetce" path="res://BlockTypes/L_Attack_1_0.tres" id="6_n0n7o"]
+[ext_resource type="PackedScene" uid="uid://c5yg8u3rahp50" path="res://Scenes/Blocks/FourLine_block.tscn" id="7_y3uml"]
 [ext_resource type="Script" path="res://Scripts/battle_manager.gd" id="8_b8fdd"]
+[ext_resource type="Script" path="res://Scripts/UI.gd" id="14_iqk34"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_uj771")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.7, 0.7)
 
 [node name="BlockManager" type="Node2D" parent="."]
 script = ExtResource("1_s5g1a")
-block_list = Array[PackedScene]([ExtResource("3_6n4ac"), ExtResource("4_qk47n")])
+block_list = Array[PackedScene]([ExtResource("3_6n4ac"), ExtResource("4_qk47n"), ExtResource("5_6dpdr"), ExtResource("6_d8dfa"), ExtResource("7_y3uml")])
 block_types = Array[ExtResource("5_grs55")]([ExtResource("6_n0n7o")])
 
 [node name="Backpack" parent="BlockManager" instance=ExtResource("1_i6rlt")]
@@ -30,9 +34,9 @@ script = ExtResource("6_afjnp")
 script = ExtResource("8_b8fdd")
 
 [node name="UI" type="CanvasLayer" parent="."]
-script = ExtResource("4_5srp6")
 
 [node name="TestingInterface" type="Control" parent="UI"]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -48,15 +52,6 @@ offset_right = 250.0
 offset_bottom = 130.0
 text = "Spawn Block"
 
-[node name="ShowAddTiles" type="Button" parent="UI/TestingInterface"]
-layout_mode = 1
-offset_left = 271.0
-offset_top = 50.0
-offset_right = 471.0
-offset_bottom = 130.0
-text = "Show Add Tiles
-"
-
 [node name="SpawnDieButton" type="Button" parent="UI/TestingInterface"]
 layout_mode = 1
 offset_left = 506.0
@@ -65,19 +60,6 @@ offset_right = 706.0
 offset_bottom = 130.0
 text = "Spawn Die
 "
-
-[node name="Coins" type="Label" parent="UI/TestingInterface"]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -253.0
-offset_top = 39.0
-offset_right = -65.0
-offset_bottom = 108.0
-grow_horizontal = 0
-theme_override_font_sizes/font_size = 50
-text = "Coins: 3"
 
 [node name="TextEdit" type="TextEdit" parent="UI/TestingInterface"]
 layout_mode = 0
@@ -96,13 +78,13 @@ offset_bottom = 175.0
 placeholder_text = "Value for block 1-6"
 
 [node name="Control" type="Control" parent="UI"]
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("14_iqk34")
 
 [node name="PlayerHP" type="Label" parent="UI/Control"]
 layout_mode = 1
@@ -114,8 +96,23 @@ offset_top = -130.0
 offset_right = 366.0
 offset_bottom = -61.0
 grow_vertical = 0
+theme_override_colors/font_color = Color(0.693, 0.9, 0.7068, 1)
 theme_override_font_sizes/font_size = 50
 text = "Player HP: 15"
+
+[node name="PlayerBlock" type="Label" parent="UI/Control"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = -209.0
+offset_right = 366.0
+offset_bottom = -140.0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.71, 0.835667, 1, 1)
+theme_override_font_sizes/font_size = 50
+text = "BLOCK: 0"
 
 [node name="EnemyHP" type="Label" parent="UI/Control"]
 layout_mode = 1
@@ -128,7 +125,7 @@ offset_right = -42.0
 offset_bottom = 99.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 40
-text = "Enemy HP: 10"
+text = "ENEMY HP"
 
 [node name="EnemyNextMove" type="Label" parent="UI/Control"]
 layout_mode = 1
@@ -141,9 +138,74 @@ offset_right = -42.0
 offset_bottom = 182.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 40
-text = "Enemy next move: 5 attack"
+text = "ENEMY DMG"
 
-[connection signal="new_slot_purchaed" from="BlockManager" to="." method="_on_block_manager_new_slot_purchaed"]
+[node name="StartBattle" type="Button" parent="UI/Control"]
+layout_mode = 1
+offset_left = 780.0
+offset_top = 50.0
+offset_right = 980.0
+offset_bottom = 130.0
+text = "Start Battle"
+
+[node name="End Turn" type="Button" parent="UI/Control"]
+layout_mode = 1
+offset_left = 780.0
+offset_top = 946.0
+offset_right = 980.0
+offset_bottom = 1026.0
+text = "End Turn"
+
+[node name="GetMoreBlocksBtn" type="Button" parent="UI/Control"]
+layout_mode = 1
+offset_left = 1042.0
+offset_top = 50.0
+offset_right = 1242.0
+offset_bottom = 130.0
+text = "Get More Blocks (3g)"
+
+[node name="Coins" type="Label" parent="UI/Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1645.0
+offset_top = 50.0
+offset_right = -1457.0
+offset_bottom = 119.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 50
+text = "Coins: 3"
+
+[node name="ShowAddTiles" type="Button" parent="UI/Control"]
+layout_mode = 1
+offset_left = 524.0
+offset_top = 50.0
+offset_right = 724.0
+offset_bottom = 130.0
+text = "Add Slots (1g each)"
+
+[node name="DieSpawnPoint" type="Marker2D" parent="."]
+position = Vector2(-619, 0)
+
+[node name="BlockSpawnPoint" type="Marker2D" parent="."]
+position = Vector2(606, 0)
+
+[connection signal="coin_value_changed" from="BlockManager" to="UI/Control" method="update_coins_label"]
+[connection signal="player_turn_over" from="BlockManager" to="BattleManager" method="_on_player_turn_over"]
+[connection signal="setup_game" from="BlockManager" to="BattleManager" method="_on_setup_game"]
+[connection signal="battle_won" from="BattleManager" to="BlockManager" method="_on_battle_won"]
+[connection signal="enemy_damage_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_enemy_damage_changed"]
+[connection signal="enemy_health_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_enemy_health_changed"]
+[connection signal="game_over" from="BattleManager" to="BlockManager" method="_on_game_over"]
+[connection signal="on_game_started" from="BattleManager" to="BlockManager" method="_on_game_started"]
+[connection signal="on_player_turn_over" from="BattleManager" to="BlockManager" method="_on_battle_manager_on_player_turn_over"]
+[connection signal="on_player_turn_start" from="BattleManager" to="BlockManager" method="_on_player_turn_started"]
+[connection signal="player_health_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_player_health_changed"]
+[connection signal="player_shield_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_player_shield_changed"]
 [connection signal="pressed" from="UI/TestingInterface/SpawnBlockButton" to="BlockManager" method="_on_spawn_block_button_pressed"]
-[connection signal="pressed" from="UI/TestingInterface/ShowAddTiles" to="BlockManager" method="_on_show_add_tiles_pressed"]
 [connection signal="pressed" from="UI/TestingInterface/SpawnDieButton" to="BlockManager" method="_on_spawn_die_button_pressed"]
+[connection signal="pressed" from="UI/Control/StartBattle" to="BattleManager" method="_on_start_battle_pressed"]
+[connection signal="pressed" from="UI/Control/End Turn" to="BattleManager" method="_on_end_turn_pressed"]
+[connection signal="pressed" from="UI/Control/GetMoreBlocksBtn" to="BlockManager" method="_on_get_more_blocks_pressed"]
+[connection signal="pressed" from="UI/Control/ShowAddTiles" to="BlockManager" method="_on_show_add_tiles_pressed"]

@@ -9,8 +9,12 @@ extends Node2D
 @onready var textEdit := $"../UI/TestingInterface/TextEdit"
 @onready var diceTextEdit := $"../UI/TestingInterface/DiceTextEdit"
 @onready var die_scene : PackedScene = preload("res://Scenes/die.tscn")
+@onready var die_spawn_point := $"../DieSpawnPoint"
+@onready var block_spawn_point := $"../BlockSpawnPoint"
 
-signal new_slot_purchaed(coins : int)
+signal coin_value_changed(new_value : int)
+signal player_turn_over()
+signal setup_game()
 
 var selected_object = null
 var animations_playing : bool = false
@@ -18,6 +22,11 @@ var animations_playing : bool = false
 var active_blocks : Array = [] # Blocks currently processing
 var overflow_queue : Array[Array] = [] #Holds overflow info for next processing round
 
+
+func _ready() -> void:
+	coin_value_changed.emit(coins)
+	await get_tree().create_timer(0.25).timeout
+	setup_game.emit()
 ##
 ## GENERAL SECTION
 ##
@@ -80,7 +89,7 @@ func handle_backpack_tile_clicked(mouse_pos: Vector2) -> void:
 		if coins > 0:
 			backpack.add_new_block(mouse_pos)
 			coins -= 1
-			new_slot_purchaed.emit(coins)
+			coin_value_changed.emit(coins)
 
 
 ##
@@ -103,14 +112,19 @@ func _on_spawn_block_button_pressed():
 	else:
 		die_value = randi_range(2,6) 
 
-	block.set_dice_slots_default_value(die_value)
-	block.name = "block " + str(die_value)
+	#block.set_dice_slots_default_value(die_value)
+	block.name = "block"
 	# Pick random colour
-	block.tilemap.modulate = Color.from_hsv(randf(), 0.6, 0.9) # Random hue, full saturation, full value
+	
 	# Connect signals when the block is created
 	block.picked_up.connect(_on_block_picked_up)
 	block.dropped.connect(_on_block_dropped)
 	block.activated.connect(battle_manager._block_activated)
+	
+	block.global_position = block_spawn_point.global_position + Vector2(randf_range(-100, 100), randf_range(-105, 100))
+
+
+
 
 
 func get_topmost_block_at(mouse_pos: Vector2) -> Block:
@@ -157,9 +171,7 @@ func _on_block_dropped(block: Block):
 ##
 ## DICE SECTION
 ##
-func _on_spawn_die_button_pressed() -> void:
-	var die = die_scene.instantiate()
-	
+func _on_spawn_die_button_pressed() -> void:	
 	var input_text = diceTextEdit.text.strip_edges()  # Remove leading/trailing spaces
 	var die_value : int
 	if input_text.is_valid_int():
@@ -171,9 +183,32 @@ func _on_spawn_die_button_pressed() -> void:
 	else:
 		die_value = randi_range(2,6) 
 
+	spawn_die(die_value)
+
+
+func _on_player_turn_started(number_of_dice : int) -> void:
+	for i in range(number_of_dice):
+		spawn_die(randi_range(1, 6))
+		await get_tree().create_timer(0.75).timeout
+
+
+func _on_get_more_blocks_pressed() -> void:
+	if coins < 3:
+		return
+	else:
+		coins -= 3
+		coin_value_changed.emit(coins)
+		for i in range(3):
+			_on_spawn_block_button_pressed()
+			await get_tree().create_timer(0.75).timeout
+
+
+func spawn_die(die_value : int) -> void:
+	var die = die_scene.instantiate()
 	add_child(die)
 	die.set_value(die_value)
 	die.die_dropped.connect(_on_die_dropped)
+	die.global_position = die_spawn_point.global_position + Vector2(randf_range(-100, 100), randf_range(-105, 100))
 
 
 func _on_die_dropped(die : Die) -> void:
@@ -260,6 +295,7 @@ func process_die_drop(blocks_and_values: Array[Array]) -> void:
 		await process_overflow()
 	else:
 		animations_playing = false
+		animations_done()
 
 
 func _on_block_countdown_complete(block: Block, overflow_value: int) -> void:
@@ -327,6 +363,7 @@ func get_blocks_with_cardinal_adjacent_slots(block : Block) -> Array[Block]:
 func process_overflow() -> void:
 	if overflow_queue.is_empty():
 		animations_playing = false
+		animations_done()
 		return # no more rounds needed
 	
 	# Move overflow queue to new round
@@ -346,3 +383,42 @@ func drop_die_in_slot(die : Die, block : Block):
 	initial_round.append([block, die_value])
 	process_die_drop(initial_round)
 		
+
+
+func animations_done():
+	if get_tree().get_nodes_in_group("Dice").is_empty():
+		player_turn_over.emit()
+
+func _on_battle_won(coins_won : int):
+	coins += coins_won
+	coin_value_changed.emit(coins)
+	clear_all_dice
+
+
+func _on_game_over():
+	print("game over block manager")
+	restart_game()
+
+
+func clear_all_dice():
+	for die in get_tree().get_nodes_in_group("Dice"):
+		die.queue_free()
+
+
+func restart_game():
+	print("Restart game")
+	# Destroy all objects in Blocks group
+	for block in get_tree().get_nodes_in_group("Blocks"):
+		block.queue_free()
+
+	# Destroy all objects in Dice group
+	clear_all_dice()
+
+	# Reset the backpack
+	backpack.reset_backpack()
+	coins = 5
+	coin_value_changed.emit(coins)
+
+
+func _on_battle_manager_on_player_turn_over() -> void:
+	clear_all_dice()

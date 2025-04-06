@@ -9,6 +9,8 @@ const OCCUPIED_ATLAS_CORD = Vector2i(2, 7)
 const EMPTY_ATLAS_COORD = Vector2i(3, 7)
 const ADD_NEW_BLOCK_COORD = Vector2i(2, 8)
 
+var starting_backpack_tiles : Array = []
+
 var adjacent_directions = [
 	Vector2i(1, 0),  Vector2i(1, 1),  Vector2i(0, 1),  Vector2i(-1, 1),
 	Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, -1), Vector2i(1, -1)
@@ -22,6 +24,9 @@ func get_nearest_tile_global_position(global_pos: Vector2) -> Vector2:
 	var tile_coord = tilemap.local_to_map(tilemap.to_local(global_pos))
 	return tilemap.to_global(tilemap.map_to_local(tile_coord))
 
+
+func _ready() -> void:
+	starting_backpack_tiles = tilemap.get_used_cells()
 
 func get_adjacent_backpack_slots_global_positions(p_global_pos: Vector2) -> Array[Vector2]:
 	var tile_coord_of_position = tilemap.local_to_map(tilemap.to_local(p_global_pos))
@@ -134,3 +139,8 @@ func show_add_tiles() -> void:
 	
 	are_new_tiles_shown = true
 	
+
+func reset_backpack():
+	tilemap.clear()
+	for cell in starting_backpack_tiles:
+		tilemap.set_cell(cell, 1, EMPTY_ATLAS_COORD)

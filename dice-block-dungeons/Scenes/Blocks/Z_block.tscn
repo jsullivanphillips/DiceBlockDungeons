@@ -28,8 +28,20 @@ sources/1 = SubResource("TileSetAtlasSource_4ou4l")
 
 [node name="Z_block" type="Node2D" groups=["Blocks"]]
 script = ExtResource("1_s4s03")
+damage_value = 3
 
-[node name="Z-Block-TileMapLayer" type="TileMapLayer" parent="." groups=["Blocks"]]
+[node name="TileMapLayer" type="TileMapLayer" parent="." groups=["Blocks"]]
 position = Vector2(-64, 0)
 tile_map_data = PackedByteArray(0, 0, 255, 255, 255, 255, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0)
 tile_set = SubResource("TileSet_vgr7a")
+
+[node name="Label" type="Label" parent="."]
+offset_left = -90.0
+offset_top = -33.0
+offset_right = 98.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.509804)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.384314)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 40
+text = "2 damage"
