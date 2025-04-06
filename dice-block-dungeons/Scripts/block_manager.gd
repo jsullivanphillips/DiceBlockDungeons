@@ -1,7 +1,6 @@
 extends Node2D
 
 @export var block_list: Array[PackedScene]
-@export var block_types : Array[BlockResource]
 @onready var backpack: Backpack = $Backpack
 @onready var battle_manager := $"../BattleManager"
 

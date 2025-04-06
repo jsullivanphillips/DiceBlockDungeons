@@ -1,16 +1,14 @@
-[gd_scene load_steps=14 format=3 uid="uid://d3xqk4hlg4v6l"]
+[gd_scene load_steps=12 format=3 uid="uid://d3xqk4hlg4v6l"]
 
 [ext_resource type="PackedScene" uid="uid://dmgddsls2wgwn" path="res://Scenes/backpack.tscn" id="1_i6rlt"]
 [ext_resource type="Script" path="res://Scripts/block_manager.gd" id="1_s5g1a"]
 [ext_resource type="Script" path="res://Scripts/main.gd" id="1_uj771"]
-[ext_resource type="PackedScene" uid="uid://bx2yu5qw217ta" path="res://Scenes/Blocks/Z_block.tscn" id="3_6n4ac"]
-[ext_resource type="PackedScene" uid="uid://bb7par8edvujo" path="res://Scenes/Blocks/L_block.tscn" id="4_qk47n"]
-[ext_resource type="PackedScene" uid="uid://cjc0kwnpitsub" path="res://Scenes/Blocks/Corner_block.tscn" id="5_6dpdr"]
-[ext_resource type="Script" path="res://Scripts/BlockResource.gd" id="5_grs55"]
+[ext_resource type="PackedScene" uid="uid://bx2yu5qw217ta" path="res://Blocks/Scenes/Z_block.tscn" id="3_6n4ac"]
+[ext_resource type="PackedScene" uid="uid://bb7par8edvujo" path="res://Blocks/Scenes/L_block.tscn" id="4_qk47n"]
+[ext_resource type="PackedScene" uid="uid://cjc0kwnpitsub" path="res://Blocks/Scenes/Corner_block.tscn" id="5_6dpdr"]
 [ext_resource type="Script" path="res://Scripts/dice_manager.gd" id="6_afjnp"]
-[ext_resource type="PackedScene" uid="uid://cabq2awm56sds" path="res://Scenes/Blocks/ThreeLine_block.tscn" id="6_d8dfa"]
-[ext_resource type="Resource" uid="uid://c78e4u5lcetce" path="res://BlockTypes/L_Attack_1_0.tres" id="6_n0n7o"]
-[ext_resource type="PackedScene" uid="uid://c5yg8u3rahp50" path="res://Scenes/Blocks/FourLine_block.tscn" id="7_y3uml"]
+[ext_resource type="PackedScene" uid="uid://cabq2awm56sds" path="res://Blocks/Scenes/ThreeLine_block.tscn" id="6_d8dfa"]
+[ext_resource type="PackedScene" uid="uid://c5yg8u3rahp50" path="res://Blocks/Scenes/FourLine_block.tscn" id="7_y3uml"]
 [ext_resource type="Script" path="res://Scripts/battle_manager.gd" id="8_b8fdd"]
 [ext_resource type="Script" path="res://Scripts/UI.gd" id="14_iqk34"]
 
@@ -23,7 +21,6 @@ zoom = Vector2(0.7, 0.7)
 [node name="BlockManager" type="Node2D" parent="."]
 script = ExtResource("1_s5g1a")
 block_list = Array[PackedScene]([ExtResource("3_6n4ac"), ExtResource("4_qk47n"), ExtResource("5_6dpdr"), ExtResource("6_d8dfa"), ExtResource("7_y3uml")])
-block_types = Array[ExtResource("5_grs55")]([ExtResource("6_n0n7o")])
 
 [node name="Backpack" parent="BlockManager" instance=ExtResource("1_i6rlt")]
 

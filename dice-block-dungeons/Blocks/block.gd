@@ -11,8 +11,6 @@ signal countdown_complete(block : Block, overflow_value : int)
 var is_locked : = false
 var dragging: bool = false
 
-@export var block_type := BlockType.BlockTypes.ATTACK
-
 @onready var camera: Camera2D = get_viewport().get_camera_2d()
 @onready var tilemap: TileMapLayer = $TileMapLayer
 @onready var die_scene : PackedScene = preload("res://Scenes/die.tscn")
@@ -180,11 +178,6 @@ func die_placed_in_slot(die_value : int) -> void:
 ##
 ## API FUNCTIONS
 ##
-func initialize(_block_type_resource : BlockType) -> void:
-	# Build the shape from the resource
-	# Set dice slot values
-	# Set value
-	pass
 # Set the dice slot value to the specified value
 func set_dice_slots(die_value: int) -> void:
 	var die_slots = get_die_slot_coordinates()

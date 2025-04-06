@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://bb7par8edvujo"]
 
-[ext_resource type="Script" path="res://Scripts/block.gd" id="1_a86gl"]
+[ext_resource type="Script" path="res://Blocks/block.gd" id="1_a86gl"]
 [ext_resource type="Texture2D" uid="uid://b1d7ibatk6rfh" path="res://kenney_board-game-icons/Die Slots.png" id="2_jp27p"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4ou4l"]

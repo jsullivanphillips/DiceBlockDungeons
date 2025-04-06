@@ -120,8 +120,6 @@ func hide_add_tiles() -> void:
 
 
 func show_add_tiles() -> void:
-
-
 	# Get all currently occupied tiles
 	var used_tiles = tilemap.get_used_cells()  # Assuming layer 0, change if needed
 	var perimeter_tiles = {}
@@ -138,7 +136,7 @@ func show_add_tiles() -> void:
 		set_tile_add_new_block(tile_coord)
 	
 	are_new_tiles_shown = true
-	
+
 
 func reset_backpack():
 	tilemap.clear()
