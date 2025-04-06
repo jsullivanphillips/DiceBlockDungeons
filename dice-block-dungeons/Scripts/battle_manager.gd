@@ -30,7 +30,6 @@ var battle_state := BATTLE_STATE.NEUTRAL
 
 # === 📢 SIGNALS ===
 signal on_player_turn_start(number_of_dice: int)
-signal on_game_started(number_of_shields: int)
 signal on_player_turn_over()
 
 signal player_health_changed(new_health: int)

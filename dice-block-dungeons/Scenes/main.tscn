@@ -198,7 +198,6 @@ position = Vector2(606, 0)
 [connection signal="enemy_damage_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_enemy_damage_changed"]
 [connection signal="enemy_health_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_enemy_health_changed"]
 [connection signal="game_over" from="BattleManager" to="BlockManager" method="_on_game_over"]
-[connection signal="on_game_started" from="BattleManager" to="BlockManager" method="_on_game_started"]
 [connection signal="on_player_turn_over" from="BattleManager" to="BlockManager" method="_on_battle_manager_on_player_turn_over"]
 [connection signal="on_player_turn_start" from="BattleManager" to="BlockManager" method="_on_player_turn_started"]
 [connection signal="player_health_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_player_health_changed"]

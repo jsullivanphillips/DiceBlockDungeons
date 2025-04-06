@@ -264,7 +264,9 @@ func display_slotted_die(die_value: int, die_slots : Array[Vector2]) -> void:
 	
 	# Destroy only the dice created by this function
 	for die in created_dice:
-		die.queue_free()
+		if die != null and is_instance_valid(die):
+			die.queue_free()
+
 
 
 
@@ -392,7 +394,7 @@ func animations_done():
 func _on_battle_won(coins_won : int):
 	coins += coins_won
 	coin_value_changed.emit(coins)
-	clear_all_dice
+	clear_all_dice()
 
 
 func _on_game_over():
