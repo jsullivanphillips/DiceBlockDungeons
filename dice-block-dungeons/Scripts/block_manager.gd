@@ -458,7 +458,8 @@ func restart_game():
 	coins = 5
 	coin_value_changed.emit(coins, coins)
 
-
+# This exists so the player can click the "end turn" button
+# which calls end turn in battle manager
 func _on_battle_manager_on_player_turn_over() -> void:
 	clear_all_dice()
 

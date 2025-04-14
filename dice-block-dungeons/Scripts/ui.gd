@@ -7,6 +7,8 @@ extends Control
 @onready var enemy_damage := $EnemyNextMove
 @onready var coin_sfx := $"../../SFX/Coin"
 
+var text_color := Color.WHITE
+
 func _on_battle_manager_enemy_health_changed(new_health: int) -> void:
 	if enemy_health:
 		enemy_health.text = "ENEMY HP: " + str(new_health)
@@ -37,7 +39,7 @@ func _on_battle_manager_enemy_damage_changed(new_value: int) -> void:
 		call_deferred("_on_battle_manager_enemy_damage_changed", new_value)
 
 func flash_label(label: Label, flash_color: Color = Color.RED, duration := 0.3):
-	var original_color = label.modulate
+	var original_color = text_color
 	label.modulate = flash_color
 	await get_tree().create_timer(duration).timeout
 	label.modulate = original_color

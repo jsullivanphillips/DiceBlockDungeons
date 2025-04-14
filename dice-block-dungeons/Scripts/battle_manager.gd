@@ -80,9 +80,10 @@ func _on_start_battle_pressed():
 
 ## ⏭ Ends player turn, starts enemy turn
 func _on_player_turn_over():
-	battle_state = BATTLE_STATE.ENEMY_TURN
-	on_player_turn_over.emit()
-	change_state()
+	if battle_state == BATTLE_STATE.PLAYER_TURN:
+		battle_state = BATTLE_STATE.ENEMY_TURN
+		on_player_turn_over.emit()
+		change_state()
 
 ## ⏭ Ends enemy turn, starts player turn
 func _on_enemy_turn_over():
