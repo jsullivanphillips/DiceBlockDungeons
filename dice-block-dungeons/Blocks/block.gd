@@ -6,6 +6,8 @@ signal picked_up(block)
 signal dropped(block)
 signal activated(block)
 signal countdown_complete(block : Block, overflow_value : int)
+signal counted_down()
+signal rotated()
 
 # Variables
 var is_locked : = false
@@ -159,6 +161,7 @@ func die_placed_in_slot(die_value : int) -> void:
 	# Step down the dice slot value
 	for current_value in range(start_value - 1, end_value-1, -1):  # Step downwards
 		if current_value > 0:
+			counted_down.emit()
 			update_dice_slots_visuals(current_value)
 			await get_tree().create_timer(duration).timeout
 		
@@ -277,4 +280,5 @@ func _input(event: InputEvent):
 		if event is InputEventMouseMotion:
 			global_position = camera.get_local_mouse_position()
 		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			rotated.emit()
 			rotation_degrees += 90

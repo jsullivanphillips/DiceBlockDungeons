@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bj2d4v1yh1ixq"
+path="res://.godot/imported/Short_high_click.mp3-a7f003e3a70d18af01768a92505e237d.mp3str"
+
+[deps]
+
+source_file="res://SFX/Zapsplat SFX/Short_high_click.mp3"
+dest_files=["res://.godot/imported/Short_high_click.mp3-a7f003e3a70d18af01768a92505e237d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
