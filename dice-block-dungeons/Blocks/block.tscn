@@ -1,10 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://c5yg8u3rahp50"]
+[gd_scene load_steps=5 format=3 uid="uid://210uidd5twrc"]
 
-[ext_resource type="Script" path="res://Blocks/block.gd" id="1_xotqt"]
-[ext_resource type="Texture2D" uid="uid://b1d7ibatk6rfh" path="res://kenney_board-game-icons/Die Slots.png" id="2_7aox0"]
+[ext_resource type="Script" path="res://Blocks/block.gd" id="1_vmo1j"]
+[ext_resource type="Texture2D" uid="uid://b1d7ibatk6rfh" path="res://kenney_board-game-icons/Die Slots.png" id="2_vh2ig"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4ou4l"]
-texture = ExtResource("2_7aox0")
+texture = ExtResource("2_vh2ig")
 texture_region_size = Vector2i(128, 128)
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-64, -64, 64, -64, 64, 64, -64, 64)
@@ -26,13 +26,11 @@ tile_size = Vector2i(128, 128)
 physics_layer_0/collision_layer = 1
 sources/1 = SubResource("TileSetAtlasSource_4ou4l")
 
-[node name="FourLine_block" type="Node2D" groups=["Blocks"]]
-script = ExtResource("1_xotqt")
+[node name="Block" type="Node2D" groups=["Blocks"]]
+script = ExtResource("1_vmo1j")
 damage_value = 3
 
-[node name="TileMapLayer" type="TileMapLayer" parent="." groups=["Blocks"]]
-position = Vector2(-64, 0)
-tile_map_data = PackedByteArray(0, 0, 0, 0, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255, 1, 0, 1, 0, 0, 0, 0, 0)
+[node name="TileMapLayer" type="TileMapLayer" parent="."]
 tile_set = SubResource("TileSet_vgr7a")
 
 [node name="Label" type="Label" parent="."]

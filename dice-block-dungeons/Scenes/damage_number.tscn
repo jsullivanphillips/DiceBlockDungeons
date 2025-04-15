@@ -1,6 +1,22 @@
 [gd_scene load_steps=5 format=3 uid="uid://dqa01wss5wucl"]
 
-[ext_resource type="Script" path="res://damage_number.gd" id="1_522lp"]
+[sub_resource type="GDScript" id="GDScript_sp4gr"]
+script/source = "extends Node2D
+
+@onready var label = $Label
+@onready var animation_player = $AnimationPlayer
+
+func _ready():
+	animation_player.play(\"float\")
+
+# Sets the displayed damage text
+func set_damage(amount):
+	label.text = str(amount)
+
+# Cleans up after animation completes
+func _on_animation_player_animation_finished(_anim_name):
+	queue_free()
+"
 
 [sub_resource type="Animation" id="Animation_slpgv"]
 length = 0.7
@@ -65,7 +81,7 @@ _data = {
 }
 
 [node name="DamageNumber" type="Node2D"]
-script = ExtResource("1_522lp")
+script = SubResource("GDScript_sp4gr")
 
 [node name="Label" type="Label" parent="."]
 offset_right = 40.0

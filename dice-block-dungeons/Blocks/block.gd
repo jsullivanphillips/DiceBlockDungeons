@@ -1,6 +1,8 @@
 extends Node2D
 class_name Block
 
+const BlockShapeLibrary = preload("res://Scripts/BlockShapeLibrary.gd")
+
 # Signals
 signal picked_up(block)
 signal dropped(block)
@@ -26,20 +28,16 @@ var dice_slots_value := 0
 @export var block_value = 0
 @onready var stat_label = $Label
 
-@onready var damage_block_cost : Array = [
-	{"damage": 3, "block": 0, "cost": 5},
-	{"damage": 0, "block": 2, "cost": 3},
-	{"damage": 2, "block": 0, "cost": 4},
-	{"damage": 1, "block": 0, "cost": 2},
-	{"damage": 0, "block": 3, "cost": 4},
-]
+func setup_from_resource(block_resource: BlockResource):
+	generate_shape_from_resource(block_resource)
+	set_stats_from_resource(block_resource)
 
-func _ready() -> void:
-	var stats = damage_block_cost.pick_random()
-	damage_value = stats["damage"]
-	block_value = stats["block"]
-	set_dice_slots_default_value(stats["cost"])
-	
+
+
+func set_stats_from_resource(block_resource: BlockResource):
+	damage_value = block_resource.attack
+	block_value = block_resource.shield
+	set_dice_slots_default_value(block_resource.dice_cost)
 	
 	if damage_value > 0:
 		stat_label.text = str(damage_value) + " dmg"
@@ -52,6 +50,18 @@ func _ready() -> void:
 		tilemap.modulate = Color.from_hsv(0, 0.6, 0.9)
 	elif block_value > 0:
 		tilemap.modulate = Color.from_hsv(0.6, 0.6, 0.9)
+
+func generate_shape_from_resource(block_resource: BlockResource):
+	var shape_data = BlockShapeLibrary.SHAPES.get(block_resource.shape_id, {})
+	var shape = shape_data.get("tiles", [])
+	var offset = shape_data.get("offset", Vector2.ZERO)
+	
+	tilemap.clear()
+	for cell in shape:
+		tilemap.set_cell(cell["pos"], 1, Vector2i(cell["tile"], 0))
+	tilemap.position = offset
+
+
 
 ##
 ## DISPLAY FUNCTIONS

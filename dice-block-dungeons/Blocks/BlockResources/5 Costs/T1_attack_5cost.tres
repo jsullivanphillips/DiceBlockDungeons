@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BlockResource" load_steps=3 format=3 uid="uid://b22ubmos62285"]
+
+[ext_resource type="PackedScene" uid="uid://210uidd5twrc" path="res://Blocks/block.tscn" id="1_1k4b6"]
+[ext_resource type="Script" path="res://Blocks/BlockResource.gd" id="2_skv7g"]
+
+[resource]
+script = ExtResource("2_skv7g")
+display_name = "T1_attack"
+scene = ExtResource("1_1k4b6")
+shape_id = "T_1"
+rarity = 0
+dice_cost = 5
+attack = 3
+shield = 0
+description = "3 damage, costs 5"
+price = 2

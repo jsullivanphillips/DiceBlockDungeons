@@ -2,7 +2,7 @@ extends Node2D
 
 class_name BlockManager
 
-@export var block_list: Array[PackedScene]
+@export var block_resources: Array[BlockResource]
 
 @onready var block_spawn_point := $"../SpawnMarkers/BlockSpawnPoint"
 
@@ -11,20 +11,30 @@ var combat_processor : CombatProcessor
 var backpack : Backpack
 var player_state : PlayerState
 
-func spawn_block():
-	var block = block_list.pick_random().instantiate()
+
+func spawn_block_from_resource(block_resource: BlockResource) -> void:
+	var block_scene = block_resource.scene.instantiate()
 	SFXManager.play_sfx("drop_block")
-	add_child(block)
-	bring_block_to_front(block)
 	
-	block.name = "block"
-	block.picked_up.connect(_on_block_picked_up)
-	block.rotated.connect(_on_block_rotated)
-	block.dropped.connect(_on_block_dropped)
-	block.counted_down.connect(_on_block_counted_down)
-	block.activated.connect(combat_processor._on_block_activated)
-	block.activated.connect(_on_block_activated)
-	block.global_position = block_spawn_point.global_position + Vector2(randf_range(-100, 100), randf_range(-105, 100))
+	# position the block
+	add_child(block_scene)
+	block_scene.global_position = block_spawn_point.global_position + Vector2(randf_range(-100, 100), randf_range(-100, 100))
+	
+	# connect signals
+	block_scene.picked_up.connect(_on_block_picked_up)
+	block_scene.rotated.connect(_on_block_rotated)
+	block_scene.dropped.connect(_on_block_dropped)
+	block_scene.counted_down.connect(_on_block_counted_down)
+	block_scene.activated.connect(combat_processor._on_block_activated)
+	block_scene.activated.connect(_on_block_activated)
+	
+	# inject meta-data
+	block_scene.name = block_resource.display_name
+	block_scene.set_meta("resource", block_resource)
+	
+	# setup the block
+	await get_tree().process_frame
+	block_scene.setup_from_resource(block_resource)
 
 
 func _on_block_counted_down():
@@ -85,7 +95,7 @@ func _on_get_more_blocks_pressed() -> void:
 	else:
 		player_state.spend_coins(3)
 		for i in range(3):
-			spawn_block()
+			spawn_block_from_resource(block_resources.pick_random())
 			await get_tree().create_timer(0.75).timeout
 
 
