@@ -1,45 +1,140 @@
-[gd_scene load_steps=20 format=3 uid="uid://d3xqk4hlg4v6l"]
+[gd_scene load_steps=21 format=3 uid="uid://d3xqk4hlg4v6l"]
 
 [ext_resource type="PackedScene" uid="uid://dmgddsls2wgwn" path="res://Scenes/backpack.tscn" id="1_i6rlt"]
 [ext_resource type="Script" path="res://Scripts/block_manager.gd" id="1_s5g1a"]
 [ext_resource type="Script" path="res://Scripts/main.gd" id="1_uj771"]
 [ext_resource type="Script" path="res://Scripts/camera_2d.gd" id="2_aemak"]
 [ext_resource type="PackedScene" uid="uid://bx2yu5qw217ta" path="res://Blocks/Scenes/Z_block.tscn" id="3_6n4ac"]
+[ext_resource type="Script" path="res://Scripts/input_manager.gd" id="3_jbl60"]
+[ext_resource type="Script" path="res://Scenes/combat_processor.gd" id="4_2ah4f"]
+[ext_resource type="Script" path="res://Scenes/game_flow_manager.gd" id="4_08nwy"]
 [ext_resource type="PackedScene" uid="uid://bb7par8edvujo" path="res://Blocks/Scenes/L_block.tscn" id="4_qk47n"]
+[ext_resource type="Script" path="res://Scenes/player_state.gd" id="4_wydrf"]
 [ext_resource type="PackedScene" uid="uid://cjc0kwnpitsub" path="res://Blocks/Scenes/Corner_block.tscn" id="5_6dpdr"]
+[ext_resource type="Script" path="res://Scenes/enemy_manager.gd" id="5_7tmq6"]
 [ext_resource type="Script" path="res://Scripts/dice_manager.gd" id="6_afjnp"]
+[ext_resource type="Script" path="res://Scripts/EnemyData.gd" id="6_cji6e"]
 [ext_resource type="PackedScene" uid="uid://cabq2awm56sds" path="res://Blocks/Scenes/ThreeLine_block.tscn" id="6_d8dfa"]
+[ext_resource type="Resource" uid="uid://b2wbiw4ldjc2b" path="res://Enemies/Slime.tres" id="7_7t2cd"]
 [ext_resource type="PackedScene" uid="uid://c5yg8u3rahp50" path="res://Blocks/Scenes/FourLine_block.tscn" id="7_y3uml"]
-[ext_resource type="Script" path="res://Scripts/battle_manager.gd" id="8_b8fdd"]
-[ext_resource type="AudioStream" uid="uid://f4q7pdfa8eew" path="res://SFX/Zapsplat SFX/new_dice.mp3" id="13_gsqk7"]
-[ext_resource type="AudioStream" uid="uid://dd5kj8v7ek832" path="res://SFX/Zapsplat SFX/pick_up_block.mp3" id="14_e7di2"]
-[ext_resource type="Script" path="res://Scripts/UI.gd" id="14_iqk34"]
-[ext_resource type="AudioStream" uid="uid://bsnqhbw8u5n4k" path="res://SFX/Zapsplat SFX/drop_block.mp3" id="15_j0c0q"]
-[ext_resource type="AudioStream" uid="uid://bj2d4v1yh1ixq" path="res://SFX/Zapsplat SFX/Short_high_click.mp3" id="16_54gup"]
-[ext_resource type="AudioStream" uid="uid://cy663sttfq4mt" path="res://SFX/Kenney SFX/footstep_carpet_000.ogg" id="17_ndpdi"]
-[ext_resource type="AudioStream" uid="uid://ckd4crfnlvvjr" path="res://SFX/Kenney SFX/impactPlate_heavy_002.ogg" id="18_mbhh3"]
-[ext_resource type="AudioStream" uid="uid://bkq4oec0m4t2b" path="res://SFX/Zapsplat SFX/gold.mp3" id="19_wdobw"]
+[ext_resource type="PackedScene" uid="uid://dh2y2yw450xuh" path="res://SFX/sfx.tscn" id="14_wyb44"]
+[ext_resource type="Script" path="res://Scenes/ui_bridge.gd" id="18_apbv5"]
+
+[sub_resource type="GDScript" id="GDScript_2y7ui"]
+script/source = "extends Control
+
+@onready var coins_label := $Coins
+@onready var enemy_health := $EnemyHP
+@onready var player_health := $PlayerHP
+@onready var player_block := $PlayerBlock
+@onready var enemy_damage := $EnemyNextMove
+
+var text_color := Color.WHITE
+
+func _on_battle_manager_enemy_health_changed(new_health: int) -> void:
+	if enemy_health:
+		enemy_health.text = \"ENEMY HP: \" + str(new_health)
+	else:
+		call_deferred(\"_on_battle_manager_enemy_health_changed\", new_health)
+
+
+func _on_battle_manager_player_health_changed(new_health: int) -> void:
+	if player_health:
+		player_health.text = \"PLAYER HP: \" + str(new_health)
+	else:
+		call_deferred(\"_on_battle_manager_player_health_changed\", new_health)
+
+
+func _on_battle_manager_player_shield_changed(new_value: int) -> void:
+	if player_block:
+		player_block.text = \"PLAYER SHIELD: \" + str(new_value)
+		if new_value != 0:
+			flash_label(player_block, Color.BLUE, 0.5)
+	else:
+		call_deferred(\"_on_battle_manager_player_shield_changed\", new_value)
+
+
+func _on_battle_manager_enemy_damage_changed(new_value: int) -> void:
+	if enemy_damage:
+		enemy_damage.text = \"ENEMY DMG: \" + str(new_value)
+	else:
+		call_deferred(\"_on_battle_manager_enemy_damage_changed\", new_value)
+
+func flash_label(label: Label, flash_color: Color = Color.RED, duration := 0.3):
+	var original_color = text_color
+	label.modulate = flash_color
+	await get_tree().create_timer(duration).timeout
+	label.modulate = original_color
+
+
+func _on_battle_manager_enemy_took_damage(_damage: int) -> void:
+	flash_label(enemy_health)
+
+
+func _on_block_manager_coin_value_changed(start_value: int, end_value: int) -> void:
+	if coins_label:
+		if start_value != end_value:
+			var current_value = start_value
+			var step = 1 if end_value > start_value else -1
+
+			while current_value != end_value:
+				current_value += step
+				coins_label.text = \"Coins: \" + str(current_value)
+				if end_value > start_value:
+					SFXManager.play_sfx(\"coin\")
+				await get_tree().create_timer(0.33).timeout
+		# Ensure final value is set (in case we overshot or skipped)
+		coins_label.text = \"Coins: \" + str(end_value)
+	else:
+		call_deferred(\"_on_block_manager_coin_value_changed\", start_value, end_value)
+"
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_uj771")
 
-[node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(0.7, 0.7)
-script = ExtResource("2_aemak")
+[node name="World" type="Node2D" parent="."]
 
-[node name="BlockManager" type="Node2D" parent="."]
+[node name="BlockManager" type="Node2D" parent="World"]
 script = ExtResource("1_s5g1a")
 block_list = Array[PackedScene]([ExtResource("3_6n4ac"), ExtResource("4_qk47n"), ExtResource("5_6dpdr"), ExtResource("6_d8dfa"), ExtResource("7_y3uml")])
 
-[node name="Backpack" parent="BlockManager" instance=ExtResource("1_i6rlt")]
+[node name="Backpack" parent="World/BlockManager" instance=ExtResource("1_i6rlt")]
 
-[node name="DiceManager" type="Node2D" parent="."]
+[node name="DiceManager" type="Node2D" parent="World"]
 script = ExtResource("6_afjnp")
 
-[node name="BattleManager" type="Node2D" parent="."]
-script = ExtResource("8_b8fdd")
+[node name="SpawnMarkers" type="Node2D" parent="World"]
+
+[node name="DieSpawnPoint" type="Marker2D" parent="World/SpawnMarkers"]
+position = Vector2(-619, 0)
+
+[node name="BlockSpawnPoint" type="Marker2D" parent="World/SpawnMarkers"]
+position = Vector2(606, 0)
+
+[node name="Camera2D" type="Camera2D" parent="World"]
+zoom = Vector2(0.7, 0.7)
+script = ExtResource("2_aemak")
+
+[node name="InputManager" type="Node2D" parent="World"]
+script = ExtResource("3_jbl60")
+
+[node name="PlayerState" type="Node" parent="."]
+script = ExtResource("4_wydrf")
+
+[node name="EnemyManager" type="Node" parent="."]
+script = ExtResource("5_7tmq6")
+enemies = Array[ExtResource("6_cji6e")]([ExtResource("7_7t2cd"), ExtResource("7_7t2cd")])
+
+[node name="GameFlowManager" type="Node" parent="."]
+script = ExtResource("4_08nwy")
+
+[node name="CombatProcessor" type="Node" parent="."]
+script = ExtResource("4_2ah4f")
 
 [node name="UI" type="CanvasLayer" parent="."]
+
+[node name="UIBridge" type="Node" parent="UI"]
+script = ExtResource("18_apbv5")
 
 [node name="TestingInterface" type="Control" parent="UI"]
 visible = false
@@ -83,16 +178,16 @@ offset_right = 688.0
 offset_bottom = 175.0
 placeholder_text = "Value for block 1-6"
 
-[node name="Control" type="Control" parent="UI"]
+[node name="Interface" type="Control" parent="UI"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("14_iqk34")
+script = SubResource("GDScript_2y7ui")
 
-[node name="PlayerHP" type="Label" parent="UI/Control"]
+[node name="PlayerHP" type="Label" parent="UI/Interface"]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
@@ -106,7 +201,7 @@ theme_override_colors/font_color = Color(0.693, 0.9, 0.7068, 1)
 theme_override_font_sizes/font_size = 50
 text = "Player HP: 15"
 
-[node name="PlayerBlock" type="Label" parent="UI/Control"]
+[node name="PlayerBlock" type="Label" parent="UI/Interface"]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
@@ -120,7 +215,7 @@ theme_override_colors/font_color = Color(0.71, 0.835667, 1, 1)
 theme_override_font_sizes/font_size = 50
 text = "BLOCK: 0"
 
-[node name="EnemyHP" type="Label" parent="UI/Control"]
+[node name="EnemyHP" type="Label" parent="UI/Interface"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -133,9 +228,7 @@ grow_horizontal = 0
 theme_override_font_sizes/font_size = 40
 text = "ENEMY HP"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="UI/Control/EnemyHP"]
-
-[node name="EnemyNextMove" type="Label" parent="UI/Control"]
+[node name="EnemyNextMove" type="Label" parent="UI/Interface"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -148,7 +241,7 @@ grow_horizontal = 0
 theme_override_font_sizes/font_size = 40
 text = "ENEMY DMG"
 
-[node name="StartBattle" type="Button" parent="UI/Control"]
+[node name="StartBattle" type="Button" parent="UI/Interface"]
 layout_mode = 1
 offset_left = 780.0
 offset_top = 50.0
@@ -156,7 +249,7 @@ offset_right = 980.0
 offset_bottom = 130.0
 text = "Start Battle"
 
-[node name="End Turn" type="Button" parent="UI/Control"]
+[node name="End Turn" type="Button" parent="UI/Interface"]
 layout_mode = 1
 offset_left = 780.0
 offset_top = 946.0
@@ -164,7 +257,7 @@ offset_right = 980.0
 offset_bottom = 1026.0
 text = "End Turn"
 
-[node name="GetMoreBlocksBtn" type="Button" parent="UI/Control"]
+[node name="GetMoreBlocksBtn" type="Button" parent="UI/Interface"]
 layout_mode = 1
 offset_left = 1042.0
 offset_top = 50.0
@@ -172,7 +265,7 @@ offset_right = 1242.0
 offset_bottom = 130.0
 text = "Get More Blocks (3g)"
 
-[node name="Coins" type="Label" parent="UI/Control"]
+[node name="Coins" type="Label" parent="UI/Interface"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -185,7 +278,7 @@ grow_horizontal = 0
 theme_override_font_sizes/font_size = 50
 text = "Coins: 3"
 
-[node name="ShowAddTiles" type="Button" parent="UI/Control"]
+[node name="ShowAddTiles" type="Button" parent="UI/Interface"]
 layout_mode = 1
 offset_left = 524.0
 offset_top = 50.0
@@ -193,56 +286,17 @@ offset_right = 724.0
 offset_bottom = 130.0
 text = "Add Slots (1g each)"
 
-[node name="SpawnMarkers" type="Node2D" parent="."]
+[node name="SFX" parent="." instance=ExtResource("14_wyb44")]
 
-[node name="DieSpawnPoint" type="Marker2D" parent="SpawnMarkers"]
-position = Vector2(-619, 0)
-
-[node name="BlockSpawnPoint" type="Marker2D" parent="SpawnMarkers"]
-position = Vector2(606, 0)
-
-[node name="SFX" type="Node2D" parent="."]
-
-[node name="DiceSpawn" type="AudioStreamPlayer2D" parent="SFX"]
-stream = ExtResource("13_gsqk7")
-
-[node name="PickupBlock" type="AudioStreamPlayer2D" parent="SFX"]
-stream = ExtResource("14_e7di2")
-
-[node name="DropBlock" type="AudioStreamPlayer2D" parent="SFX"]
-stream = ExtResource("15_j0c0q")
-
-[node name="Click" type="AudioStreamPlayer2D" parent="SFX"]
-stream = ExtResource("16_54gup")
-
-[node name="Hit" type="AudioStreamPlayer2D" parent="SFX"]
-stream = ExtResource("17_ndpdi")
-
-[node name="Shield" type="AudioStreamPlayer2D" parent="SFX"]
-stream = ExtResource("18_mbhh3")
-
-[node name="Coin" type="AudioStreamPlayer2D" parent="SFX"]
-stream = ExtResource("19_wdobw")
-
-[connection signal="animations_playing_value_changed" from="BlockManager" to="BattleManager" method="_on_block_manager_animations_playing_value_changed"]
-[connection signal="coin_value_changed" from="BlockManager" to="UI/Control" method="_on_block_manager_coin_value_changed"]
-[connection signal="player_turn_over" from="BlockManager" to="BattleManager" method="_on_player_turn_over"]
-[connection signal="setup_game" from="BlockManager" to="BattleManager" method="_on_setup_game"]
-[connection signal="battle_won" from="BattleManager" to="BlockManager" method="_on_battle_won"]
-[connection signal="enemy_damage_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_enemy_damage_changed"]
-[connection signal="enemy_dealt_damage" from="BattleManager" to="BlockManager" method="_on_battle_manager_enemy_dealt_damage"]
-[connection signal="enemy_health_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_enemy_health_changed"]
-[connection signal="enemy_took_damage" from="BattleManager" to="Camera2D" method="_on_battle_manager_enemy_took_damage"]
-[connection signal="enemy_took_damage" from="BattleManager" to="UI/Control" method="_on_battle_manager_enemy_took_damage"]
-[connection signal="game_over" from="BattleManager" to="BlockManager" method="_on_game_over"]
-[connection signal="on_player_turn_over" from="BattleManager" to="BlockManager" method="_on_battle_manager_on_player_turn_over"]
-[connection signal="on_player_turn_start" from="BattleManager" to="BlockManager" method="_on_player_turn_started"]
-[connection signal="player_health_changed" from="BattleManager" to="BlockManager" method="_on_battle_manager_player_health_changed"]
-[connection signal="player_health_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_player_health_changed"]
-[connection signal="player_shield_changed" from="BattleManager" to="UI/Control" method="_on_battle_manager_player_shield_changed"]
-[connection signal="pressed" from="UI/TestingInterface/SpawnBlockButton" to="BlockManager" method="_on_spawn_block_button_pressed"]
-[connection signal="pressed" from="UI/TestingInterface/SpawnDieButton" to="BlockManager" method="_on_spawn_die_button_pressed"]
-[connection signal="pressed" from="UI/Control/StartBattle" to="BattleManager" method="_on_start_battle_pressed"]
-[connection signal="pressed" from="UI/Control/End Turn" to="BattleManager" method="_on_end_turn_pressed"]
-[connection signal="pressed" from="UI/Control/GetMoreBlocksBtn" to="BlockManager" method="_on_get_more_blocks_pressed"]
-[connection signal="pressed" from="UI/Control/ShowAddTiles" to="BlockManager" method="_on_show_add_tiles_pressed"]
+[connection signal="non_block_or_die_clicked" from="World/InputManager" to="World/BlockManager/Backpack" method="_on_input_manager_non_block_or_die_clicked"]
+[connection signal="coins_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_coins_changed"]
+[connection signal="health_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_health_changed"]
+[connection signal="shield_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_shield_changed"]
+[connection signal="enemy_damage_changed" from="EnemyManager" to="UI/UIBridge" method="_on_enemy_manager_enemy_damage_changed"]
+[connection signal="enemy_died" from="EnemyManager" to="GameFlowManager" method="_on_enemy_manager_enemy_died"]
+[connection signal="enemy_health_changed" from="EnemyManager" to="UI/UIBridge" method="_on_enemy_manager_enemy_health_changed"]
+[connection signal="pressed" from="UI/TestingInterface/SpawnBlockButton" to="World/BlockManager" method="_on_spawn_block_button_pressed"]
+[connection signal="pressed" from="UI/TestingInterface/SpawnDieButton" to="World/BlockManager" method="_on_spawn_die_button_pressed"]
+[connection signal="pressed" from="UI/Interface/StartBattle" to="UI/UIBridge" method="_on_start_battle_pressed"]
+[connection signal="pressed" from="UI/Interface/GetMoreBlocksBtn" to="UI/UIBridge" method="_on_get_more_blocks_btn_pressed"]
+[connection signal="pressed" from="UI/Interface/ShowAddTiles" to="UI/UIBridge" method="_on_show_add_tiles_pressed"]

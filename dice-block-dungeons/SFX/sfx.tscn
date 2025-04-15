@@ -1,0 +1,34 @@
+[gd_scene load_steps=9 format=3 uid="uid://dh2y2yw450xuh"]
+
+[ext_resource type="Script" path="res://SFX/sfx_manager.gd" id="1_b7tf1"]
+[ext_resource type="AudioStream" uid="uid://f4q7pdfa8eew" path="res://SFX/Zapsplat SFX/new_dice.mp3" id="2_xn3la"]
+[ext_resource type="AudioStream" uid="uid://dd5kj8v7ek832" path="res://SFX/Zapsplat SFX/pick_up_block.mp3" id="3_6whvy"]
+[ext_resource type="AudioStream" uid="uid://bsnqhbw8u5n4k" path="res://SFX/Zapsplat SFX/drop_block.mp3" id="4_dc441"]
+[ext_resource type="AudioStream" uid="uid://bj2d4v1yh1ixq" path="res://SFX/Zapsplat SFX/Short_high_click.mp3" id="5_lfd0g"]
+[ext_resource type="AudioStream" uid="uid://cy663sttfq4mt" path="res://SFX/Kenney SFX/footstep_carpet_000.ogg" id="6_ripa5"]
+[ext_resource type="AudioStream" uid="uid://ckd4crfnlvvjr" path="res://SFX/Kenney SFX/impactPlate_heavy_002.ogg" id="7_cowf0"]
+[ext_resource type="AudioStream" uid="uid://bkq4oec0m4t2b" path="res://SFX/Zapsplat SFX/gold.mp3" id="8_0bayi"]
+
+[node name="SFX" type="Node2D"]
+script = ExtResource("1_b7tf1")
+
+[node name="DiceSpawn" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2_xn3la")
+
+[node name="PickupBlock" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_6whvy")
+
+[node name="DropBlock" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_dc441")
+
+[node name="Click" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_lfd0g")
+
+[node name="Hit" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("6_ripa5")
+
+[node name="Shield" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("7_cowf0")
+
+[node name="Coin" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("8_0bayi")

@@ -1,5 +1,8 @@
 extends Node2D
+
 class_name Backpack
+
+var player_state : PlayerState
 
 @onready var tilemap := $Backpack
 
@@ -142,3 +145,17 @@ func reset_backpack():
 	tilemap.clear()
 	for cell in starting_backpack_tiles:
 		tilemap.set_cell(cell, 1, EMPTY_ATLAS_COORD)
+
+
+func _on_show_add_tiles_pressed() -> void:
+	if not are_new_tiles_shown:
+		show_add_tiles()
+	else:
+		hide_add_tiles()
+
+
+func _on_input_manager_non_block_or_die_clicked(mouse_pos: Vector2) -> void:
+	if is_position_add_new_block(mouse_pos):
+		if player_state.coins > 0:
+			add_new_block(mouse_pos)
+			player_state.spend_coins(1)

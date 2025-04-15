@@ -59,7 +59,7 @@ func _ready() -> void:
 # Activate the block with visual effects
 func activate() -> void:
 	activated.emit(self)
-
+	print("block activated!")
 	var old_color = tilemap.modulate
 	var modified_color = old_color
 	modified_color.s = 0.2

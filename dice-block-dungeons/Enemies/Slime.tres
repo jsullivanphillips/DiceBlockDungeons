@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3 uid="uid://b2wbiw4ldjc2b"]
+
+[ext_resource type="Script" path="res://Scripts/EnemyData.gd" id="1_r0wor"]
+
+[resource]
+script = ExtResource("1_r0wor")
+name = "Slime"
+max_health = 10
+damage = 3
+coins_dropped = 3
