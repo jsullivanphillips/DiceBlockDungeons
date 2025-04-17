@@ -1,7 +1,7 @@
 extends Resource
 class_name BlockResource
 
-const Rarity = preload("res://Scripts/Rarity.gd")  # Update path as needed
+const Rarity = preload("res://Blocks/Rarity.gd")  # Update path as needed
 
 @export var display_name: String
 @export var scene: PackedScene

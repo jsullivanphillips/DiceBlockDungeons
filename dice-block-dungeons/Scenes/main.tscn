@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://d3xqk4hlg4v6l"]
+[gd_scene load_steps=16 format=3 uid="uid://d3xqk4hlg4v6l"]
 
 [ext_resource type="PackedScene" uid="uid://dmgddsls2wgwn" path="res://Scenes/backpack.tscn" id="1_i6rlt"]
 [ext_resource type="Script" path="res://Scripts/block_manager.gd" id="1_s5g1a"]
@@ -6,22 +6,12 @@
 [ext_resource type="Script" path="res://Scripts/camera_2d.gd" id="2_aemak"]
 [ext_resource type="Script" path="res://Scripts/input_manager.gd" id="3_jbl60"]
 [ext_resource type="Script" path="res://Scripts/combat_processor.gd" id="4_2ah4f"]
-[ext_resource type="Resource" uid="uid://y4rngfo2t2wo" path="res://Blocks/BlockResources/5 Costs/3_attack_5cost.tres" id="4_06nvp"]
 [ext_resource type="Script" path="res://Scripts/game_flow_manager.gd" id="4_08nwy"]
 [ext_resource type="Script" path="res://Scripts/player_state.gd" id="4_wydrf"]
 [ext_resource type="Script" path="res://Scripts/enemy_manager.gd" id="5_7tmq6"]
-[ext_resource type="Resource" uid="uid://k7hqyu0hm8s1" path="res://Blocks/BlockResources/5 Costs/Corner_attack_5cost.tres" id="5_xos0g"]
-[ext_resource type="Resource" uid="uid://ca3ngg0wtwuqa" path="res://Blocks/BlockResources/5 Costs/J_attack_5cost.tres" id="6_a4upk"]
 [ext_resource type="Script" path="res://Scripts/dice_manager.gd" id="6_afjnp"]
 [ext_resource type="Script" path="res://Scripts/EnemyData.gd" id="6_cji6e"]
 [ext_resource type="Resource" uid="uid://b2wbiw4ldjc2b" path="res://Enemies/Slime.tres" id="7_7t2cd"]
-[ext_resource type="Resource" uid="uid://3kkk24x5poki" path="res://Blocks/BlockResources/5 Costs/Square_attack_5cost.tres" id="8_n0iel"]
-[ext_resource type="Script" path="res://Blocks/BlockResource.gd" id="8_t62n2"]
-[ext_resource type="Resource" uid="uid://6505g468vrdx" path="res://Blocks/BlockResources/5 Costs/S_attack_5cost.tres" id="9_1bpjs"]
-[ext_resource type="Resource" uid="uid://ckcqxip1py07e" path="res://Blocks/BlockResources/5 Costs/L_attack_5cost.tres" id="9_xus3f"]
-[ext_resource type="Resource" uid="uid://b22ubmos62285" path="res://Blocks/BlockResources/5 Costs/T1_attack_5cost.tres" id="10_ikgsj"]
-[ext_resource type="Resource" uid="uid://ckinvjuin815r" path="res://Blocks/BlockResources/5 Costs/T2_attack_5cost.tres" id="11_fyxop"]
-[ext_resource type="Resource" uid="uid://c3h4pqtmsgnw6" path="res://Blocks/BlockResources/5 Costs/Z_attack_5cost.tres" id="12_m7rql"]
 [ext_resource type="PackedScene" uid="uid://dh2y2yw450xuh" path="res://SFX/sfx.tscn" id="14_wyb44"]
 [ext_resource type="Script" path="res://Scripts/ui_bridge.gd" id="18_apbv5"]
 
@@ -101,7 +91,6 @@ script = ExtResource("1_uj771")
 
 [node name="BlockManager" type="Node2D" parent="World"]
 script = ExtResource("1_s5g1a")
-block_resources = Array[ExtResource("8_t62n2")]([ExtResource("4_06nvp"), ExtResource("5_xos0g"), ExtResource("6_a4upk"), ExtResource("9_xus3f"), ExtResource("8_n0iel"), ExtResource("9_1bpjs"), ExtResource("10_ikgsj"), ExtResource("11_fyxop"), ExtResource("12_m7rql")])
 
 [node name="Backpack" parent="World/BlockManager" instance=ExtResource("1_i6rlt")]
 

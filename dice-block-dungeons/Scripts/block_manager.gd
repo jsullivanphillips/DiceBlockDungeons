@@ -2,14 +2,38 @@ extends Node2D
 
 class_name BlockManager
 
-@export var block_resources: Array[BlockResource]
-
 @onready var block_spawn_point := $"../SpawnMarkers/BlockSpawnPoint"
 
 var input_manager : InputManager
 var combat_processor : CombatProcessor
 var backpack : Backpack
 var player_state : PlayerState
+
+var block_resources: Array[BlockResource]
+
+func _ready():
+	load_generated_block_resources()
+
+
+func load_generated_block_resources():
+	var dir := DirAccess.open("res://Blocks/GeneratedBlocks")
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if file_name.ends_with(".tres"):
+				var full_path = "res://Blocks/GeneratedBlocks/" + file_name
+				var block_res = load(full_path)
+				if block_res is BlockResource:
+					block_resources.append(block_res)
+			file_name = dir.get_next()
+		dir.list_dir_end()
+	else:
+		push_error("❌ Could not open GeneratedBlocks directory")
+
+
+func spawn_random_block() -> void:
+	spawn_block_from_resource(block_resources.pick_random())
 
 
 func spawn_block_from_resource(block_resource: BlockResource) -> void:
@@ -95,7 +119,7 @@ func _on_get_more_blocks_pressed() -> void:
 	else:
 		player_state.spend_coins(3)
 		for i in range(3):
-			spawn_block_from_resource(block_resources.pick_random())
+			spawn_random_block()
 			await get_tree().create_timer(0.75).timeout
 
 

@@ -11,7 +11,13 @@ extends Node2D
 @onready var ui_bridge = $UI/UIBridge
 @onready var camera = $World/Camera2D
 
+const ShapeLib = preload("res://Blocks/BlockShapeLibrary.gd")
+
 func _ready():
+	
+	ShapeLib.load_shapes()
+	print("Loaded keys:", ShapeLib.shapes.keys())
+
 	dice_manager.input_manager = input_manager
 	block_manager.input_manager = input_manager
 	

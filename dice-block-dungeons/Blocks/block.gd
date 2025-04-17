@@ -1,7 +1,7 @@
+@tool
 extends Node2D
 class_name Block
 
-const BlockShapeLibrary = preload("res://Scripts/BlockShapeLibrary.gd")
 
 # Signals
 signal picked_up(block)
@@ -28,10 +28,25 @@ var dice_slots_value := 0
 @export var block_value = 0
 @onready var stat_label = $Label
 
-func setup_from_resource(block_resource: BlockResource):
-	generate_shape_from_resource(block_resource)
-	set_stats_from_resource(block_resource)
+#const ShapeLib = preload("res://Blocks/BlockShapeLibrary.gd")
+var _pending_resource: BlockResource = null
 
+func setup_from_resource(resource: BlockResource):
+	_pending_resource = resource
+	call_deferred("_apply_pending_resource")
+
+
+func _apply_pending_resource():
+	# Wait one frame to allow @onready vars like tilemap to init
+	await get_tree().process_frame
+
+	if not is_instance_valid(tilemap):
+		push_warning("TileMap still not initialized after deferral.")
+		return
+	print("generating block from resource ", _pending_resource.display_name)
+	generate_shape_from_resource(_pending_resource)
+	set_stats_from_resource(_pending_resource)
+	_pending_resource = null
 
 
 func set_stats_from_resource(block_resource: BlockResource):
@@ -52,12 +67,15 @@ func set_stats_from_resource(block_resource: BlockResource):
 		tilemap.modulate = Color.from_hsv(0.6, 0.6, 0.9)
 
 func generate_shape_from_resource(block_resource: BlockResource):
-	var shape_data = BlockShapeLibrary.SHAPES.get(block_resource.shape_id, {})
-	var shape = shape_data.get("tiles", [])
-	var offset = shape_data.get("offset", Vector2.ZERO)
+	print("🔍 Loading shape_id:", block_resource.shape_id)
+	print("📦 All available shape keys:", BlockShapeLibrary.get_shape_ids())
+	var shape_data = BlockShapeLibrary.get_shape_data(block_resource.shape_id)
+	var tiles = BlockShapeLibrary.get_tiles(block_resource.shape_id)
+	var offset = BlockShapeLibrary.get_offset(block_resource.shape_id)
 	
 	tilemap.clear()
-	for cell in shape:
+	for cell in tiles:
+		print("setting cell: ", cell["pos"], " to ", cell["tile"])
 		tilemap.set_cell(cell["pos"], 1, Vector2i(cell["tile"], 0))
 	tilemap.position = offset
 

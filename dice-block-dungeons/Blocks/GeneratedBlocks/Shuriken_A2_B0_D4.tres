@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BlockResource" load_steps=3 format=3 uid="uid://vvrvosjjffl8"]
+
+[ext_resource type="PackedScene" uid="uid://210uidd5twrc" path="res://Blocks/block.tscn" id="1_3vgd4"]
+[ext_resource type="Script" path="res://Blocks/BlockResource.gd" id="1_4xa4s"]
+
+[resource]
+script = ExtResource("1_4xa4s")
+display_name = "Shuriken A2 B0 D4"
+scene = ExtResource("1_3vgd4")
+shape_id = "Shuriken"
+rarity = 1
+dice_cost = 4
+attack = 2
+shield = 0
+description = ""
+price = 5

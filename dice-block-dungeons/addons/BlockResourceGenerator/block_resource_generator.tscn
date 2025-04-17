@@ -1,0 +1,91 @@
+[gd_scene load_steps=2 format=3 uid="uid://xjpdtddgoynt"]
+
+[ext_resource type="Script" path="res://addons/BlockResourceGenerator/block_resource_generator.gd" id="1_t5bfv"]
+
+[node name="BlockResourceGenerator" type="VBoxContainer"]
+offset_right = 512.0
+offset_bottom = 679.0
+script = ExtResource("1_t5bfv")
+
+[node name="ShapeDropdown" type="OptionButton" parent="."]
+layout_mode = 2
+selected = 0
+item_count = 9
+popup/item_0/text = "L"
+popup/item_1/text = "J"
+popup/item_1/id = 1
+popup/item_2/text = "Corner"
+popup/item_2/id = 2
+popup/item_3/text = "3"
+popup/item_3/id = 3
+popup/item_4/text = "Z"
+popup/item_4/id = 4
+popup/item_5/text = "S"
+popup/item_5/id = 5
+popup/item_6/text = "T_1"
+popup/item_6/id = 6
+popup/item_7/text = "T_2"
+popup/item_7/id = 7
+popup/item_8/text = "Square"
+popup/item_8/id = 8
+
+[node name="AttackHBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Attack" type="Label" parent="AttackHBox"]
+layout_mode = 2
+text = "Attack"
+
+[node name="AttackSlider" type="HSlider" parent="AttackHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 8.0
+value = 1.0
+
+[node name="ShieldHBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Shield" type="Label" parent="ShieldHBox"]
+layout_mode = 2
+text = "Shield
+"
+
+[node name="ShieldSlider" type="HSlider" parent="ShieldHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 8.0
+
+[node name="DiceHBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Dice" type="Label" parent="DiceHBox"]
+layout_mode = 2
+text = "Dice"
+
+[node name="DiceSlider" type="HSlider" parent="DiceHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 6.0
+value = 1.0
+
+[node name="Save Block Button" type="Button" parent="."]
+layout_mode = 2
+text = "Save Block"
+
+[node name="StatusLabel" type="Label" parent="."]
+layout_mode = 2
+text = "🌀 Live Preview: L A1 B0 D1"
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+layout_mode = 2
+
+[node name="PreviewViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(1080, 1080)
+render_target_update_mode = 4
+
+[node name="shape_edit_dropdown" type="OptionButton" parent="."]
+layout_mode = 2
+
+[connection signal="pressed" from="Save Block Button" to="." method="_on_save_pressed"]
