@@ -7,6 +7,7 @@ var dice_manager : DiceManager
 var enemy_manager : EnemyManager
 var player_state : PlayerState
 var game_flow_manager : GameFlowManager
+var camera : CameraShake
 
 var is_combat_processing : bool
 
@@ -16,9 +17,13 @@ var overflow_queue : Array[Array] = [] #Holds overflow info for next processing 
 func _on_block_activated(block : Block) -> void:
 	if block.damage_value > 0:
 		enemy_manager.deal_damage(block.damage_value)
+		camera.shake()
 
 	if block.block_value > 0:
 		player_state.add_shield(block.block_value)
+	
+	if block.bonus_dice_value > 0:
+		dice_manager.spawn_die(randi_range(1,block.dice_slots_default_value))
 
 func process_die_drop(blocks_and_values: Array[Array]) -> void:
 	# Register blocks for countdown

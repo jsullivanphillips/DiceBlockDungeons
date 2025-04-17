@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="BlockResource" load_steps=3 format=3 uid="uid://b81nnr7ikuoy0"]
+
+[ext_resource type="PackedScene" uid="uid://210uidd5twrc" path="res://Blocks/block.tscn" id="1_ehuc8"]
+[ext_resource type="Script" path="res://Blocks/BlockResource.gd" id="2_ega1i"]
+
+[resource]
+script = ExtResource("2_ega1i")
+display_name = "L A0 B0 D2 DC5"
+scene = ExtResource("1_ehuc8")
+shape_id = "L"
+rarity = 0
+dice_cost = 5
+attack = 0
+shield = 0
+bonus_dice = 1
+description = ""
+price = 5

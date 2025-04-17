@@ -8,6 +8,7 @@ var player_state : PlayerState
 var backpack : Backpack
 var combat_processor : CombatProcessor
 var enemy_manager : EnemyManager
+var ui_bridge : UIBridge
 
 
 enum GameState {
@@ -16,7 +17,8 @@ enum GameState {
 	PLAYER_INPUT,
 	PROCESSING_COMBAT,
 	ENEMY_TURN,
-	GAME_OVER
+	GAME_OVER,
+	GAME_WON
 }
 
 # For debugging
@@ -26,7 +28,9 @@ const GameStateNames = {
 	GameState.PLAYER_INPUT: "PLAYER_INPUT",
 	GameState.PROCESSING_COMBAT: "PROCESSING_COMBAT",
 	GameState.ENEMY_TURN: "ENEMY_TURN",
-	GameState.GAME_OVER: "GAME_OVER"
+	GameState.GAME_OVER: "GAME_OVER",
+	GameState.GAME_WON: "GAME_WON"
+	
 }
 
 
@@ -38,8 +42,10 @@ func _ready() -> void:
 
 
 func _post_ready() -> void:
-	player_state.coins = 5
 	enemy_manager.set_first_enemy()
+	player_state.setup_initial_dice()
+	player_state.call_deferred("set_starting_coins", 10)
+	ui_bridge.show_shop_interface()
 
 
 func player_turn_over():
@@ -50,6 +56,7 @@ func player_turn_over():
 
 func request_start_game():
 	if current_state == GameState.IDLE:
+		ui_bridge.hide_shop_interface()
 		change_state(GameState.PLAYER_TURN_START)
 	else:
 		push_warning("Start Game requested but game already started or not in IDLE state.")
@@ -69,10 +76,13 @@ func _on_combat_processing_complete() -> void:
 			if enemy_manager.is_enemy_dead:
 				# This assumes the enemy died *during* processing
 				change_state(GameState.IDLE)
+				ui_bridge.show_shop_interface()
 				dice_manager.clear_all_dice()
 				block_manager.reset_all_dice_slots_to_default()
 				player_state.add_coins(enemy_manager.get_coins_dropped())
+				player_state.shield = 0
 				enemy_manager.next_enemy()
+				
 			elif dice_manager.has_remaining_dice():
 				change_state(GameState.PLAYER_INPUT)
 			else:
@@ -91,16 +101,8 @@ func change_state(new_state: GameState) -> void:
 	if current_state == new_state:
 		return
 
-	## debug
-	print("\n🔄 Requested state change: %s → %s" % [
-		GameStateNames.get(current_state, str(current_state)),
-		GameStateNames.get(new_state, str(new_state))
-	])
-	print_stack()
-
 	current_state = new_state
-	print("✅ Game state changed to:", GameStateNames.get(current_state, str(current_state)))
-
+	
 	match current_state:
 		GameState.PLAYER_TURN_START:
 			await dice_manager.spawn_player_dice()
@@ -115,7 +117,9 @@ func change_state(new_state: GameState) -> void:
 		GameState.ENEMY_TURN:
 			await enemy_manager.run_enemy_turn()
 			await get_tree().create_timer(1).timeout
-			change_state(GameState.PLAYER_TURN_START)
+			if current_state != GameState.GAME_OVER and current_state != GameState.GAME_WON:
+				player_state.shield = 0
+				change_state(GameState.PLAYER_TURN_START)
 
 		GameState.GAME_OVER:
 			pass
@@ -132,8 +136,19 @@ func _on_battle_won(coins_won : int):
 	player_state.add_coins(coins_won)
 
 
+func on_player_health_less_than_zero():
+	change_state(GameState.GAME_OVER)
+	_on_game_over()
+
+
 func _on_game_over():
-	restart_game()
+	ui_bridge.show_game_over()
+
+func request_restart_game():
+	if current_state == GameState.GAME_OVER or current_state == GameState.GAME_WON:
+		restart_game()
+		change_state(GameState.IDLE)
+		ui_bridge.hide_restart_button()
 
 
 func restart_game():
@@ -143,11 +158,15 @@ func restart_game():
 	# Destroy all objects in Dice group
 	dice_manager.clear_all_dice()
 	
+	player_state.restart_game()
 	player_state.coins = 5
 	player_state.shield = 0
 
 	# Reset the backpack
 	backpack.reset_backpack()
+	
+	# Show the store
+	ui_bridge.show_shop_interface()
 
 
 func try_end_player_turn():
@@ -156,4 +175,12 @@ func try_end_player_turn():
 
 
 func _on_end_turn_pressed() -> void:
-	pass
+	if current_state == GameState.PLAYER_INPUT:
+		dice_manager.clear_all_dice()
+		player_turn_over()
+
+
+func _on_enemy_manager_game_won() -> void:
+	change_state(GameState.GAME_WON)
+	ui_bridge.show_game_won()
+	

@@ -10,13 +10,13 @@ extends Node2D
 @onready var enemy_manager = $EnemyManager
 @onready var ui_bridge = $UI/UIBridge
 @onready var camera = $World/Camera2D
+@onready var store_ui = $UI/StoreUI
+@onready var store_manager = $StoreManager
 
 const ShapeLib = preload("res://Blocks/BlockShapeLibrary.gd")
 
 func _ready():
-	
 	ShapeLib.load_shapes()
-	print("Loaded keys:", ShapeLib.shapes.keys())
 
 	dice_manager.input_manager = input_manager
 	block_manager.input_manager = input_manager
@@ -33,6 +33,7 @@ func _ready():
 	game_flow_manager.block_manager = block_manager
 	input_manager.block_manager = block_manager
 	ui_bridge.block_manager = block_manager
+	store_manager.block_manager = block_manager
 	
 	block_manager.player_state = player_state
 	game_flow_manager.player_state = player_state
@@ -40,6 +41,8 @@ func _ready():
 	dice_manager.player_state = player_state
 	combat_processor.player_state = player_state
 	enemy_manager.player_state = player_state
+	store_manager.player_state = player_state
+	
 	
 	block_manager.backpack = backpack
 	game_flow_manager.backpack = backpack
@@ -54,5 +57,15 @@ func _ready():
 	ui_bridge.game_flow_manager = game_flow_manager
 	
 	input_manager.camera = camera
+	combat_processor.camera= camera
+	player_state.camera = camera
 	
 	input_manager.ui_bridge = ui_bridge
+	game_flow_manager.ui_bridge = ui_bridge
+	
+	store_manager.store_ui = store_ui
+	ui_bridge.store_ui = store_ui
+	
+	ui_bridge.store_manager = store_manager
+	
+	

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="BlockResource" load_steps=3 format=3 uid="uid://drbptfffsdqsa"]
+
+[ext_resource type="PackedScene" uid="uid://210uidd5twrc" path="res://Blocks/block.tscn" id="1_tfigo"]
+[ext_resource type="Script" path="res://Blocks/BlockResource.gd" id="2_4cb6g"]
+
+[resource]
+script = ExtResource("2_4cb6g")
+display_name = "3long_2slots A0 B2 D0 DC3"
+scene = ExtResource("1_tfigo")
+shape_id = "3long_2slots"
+rarity = 1
+dice_cost = 4
+attack = 0
+shield = 2
+bonus_dice = 0
+description = ""
+price = 5

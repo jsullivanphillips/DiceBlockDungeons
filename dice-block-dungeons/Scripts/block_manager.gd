@@ -118,7 +118,7 @@ func _on_get_more_blocks_pressed() -> void:
 		return
 	else:
 		player_state.spend_coins(3)
-		for i in range(3):
+		for i in range(2):
 			spawn_random_block()
 			await get_tree().create_timer(0.75).timeout
 

@@ -26,6 +26,7 @@ var dice_slots_value := 0
 
 @export var damage_value = 0
 @export var block_value = 0
+@export var bonus_dice_value = 0
 @onready var stat_label = $Label
 
 #const ShapeLib = preload("res://Blocks/BlockShapeLibrary.gd")
@@ -43,7 +44,6 @@ func _apply_pending_resource():
 	if not is_instance_valid(tilemap):
 		push_warning("TileMap still not initialized after deferral.")
 		return
-	print("generating block from resource ", _pending_resource.display_name)
 	generate_shape_from_resource(_pending_resource)
 	set_stats_from_resource(_pending_resource)
 	_pending_resource = null
@@ -52,12 +52,15 @@ func _apply_pending_resource():
 func set_stats_from_resource(block_resource: BlockResource):
 	damage_value = block_resource.attack
 	block_value = block_resource.shield
+	bonus_dice_value = block_resource.bonus_dice
 	set_dice_slots_default_value(block_resource.dice_cost)
 	
 	if damage_value > 0:
 		stat_label.text = str(damage_value) + " dmg"
 	elif block_value > 0:
-		stat_label.text = str(block_value) + "blk"
+		stat_label.text = str(block_value) + " blk"
+	elif bonus_dice_value > 0:
+		stat_label.text = str(bonus_dice_value) + " dice"
 	else:
 		stat_label.text = ""
 	
@@ -65,19 +68,19 @@ func set_stats_from_resource(block_resource: BlockResource):
 		tilemap.modulate = Color.from_hsv(0, 0.6, 0.9)
 	elif block_value > 0:
 		tilemap.modulate = Color.from_hsv(0.6, 0.6, 0.9)
+	elif bonus_dice_value > 0:
+		tilemap.modulate = Color.from_hsv(0.3, 0.5, 0.9)
 
 func generate_shape_from_resource(block_resource: BlockResource):
-	print("🔍 Loading shape_id:", block_resource.shape_id)
-	print("📦 All available shape keys:", BlockShapeLibrary.get_shape_ids())
 	var shape_data = BlockShapeLibrary.get_shape_data(block_resource.shape_id)
 	var tiles = BlockShapeLibrary.get_tiles(block_resource.shape_id)
 	var offset = BlockShapeLibrary.get_offset(block_resource.shape_id)
 	
 	tilemap.clear()
 	for cell in tiles:
-		print("setting cell: ", cell["pos"], " to ", cell["tile"])
 		tilemap.set_cell(cell["pos"], 1, Vector2i(cell["tile"], 0))
 	tilemap.position = offset
+
 
 
 
@@ -87,7 +90,6 @@ func generate_shape_from_resource(block_resource: BlockResource):
 # Activate the block with visual effects
 func activate() -> void:
 	activated.emit(self)
-	print("block activated!")
 	var old_color = tilemap.modulate
 	var modified_color = old_color
 	modified_color.s = 0.2
@@ -184,7 +186,7 @@ func die_placed_in_slot(die_value : int) -> void:
 	var start_value = dice_slots_value
 	var end_value = max(0, start_value - die_value)
 	var overflow_value = die_value - (start_value - end_value)
-	var duration = 0.6
+	var duration = 0.4
 	
 	# Step down the dice slot value
 	for current_value in range(start_value - 1, end_value-1, -1):  # Step downwards

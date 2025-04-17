@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="BlockResource" load_steps=3 format=3 uid="uid://dexmgo60otr34"]
+
+[ext_resource type="PackedScene" uid="uid://210uidd5twrc" path="res://Blocks/block.tscn" id="1_a8b10"]
+[ext_resource type="Script" path="res://Blocks/BlockResource.gd" id="2_vdepj"]
+
+[resource]
+script = ExtResource("2_vdepj")
+display_name = "leftCorner_1slot A0 B2 D0 DC3"
+scene = ExtResource("1_a8b10")
+shape_id = "leftCorner_1slot"
+rarity = 1
+dice_cost = 3
+attack = 0
+shield = 2
+bonus_dice = 0
+description = ""
+price = 3

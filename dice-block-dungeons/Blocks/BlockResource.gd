@@ -10,6 +10,7 @@ const Rarity = preload("res://Blocks/Rarity.gd")  # Update path as needed
 @export var dice_cost: int = 1 
 @export var attack: int = 0     # How much damage this block does
 @export var shield: int = 0     # How much block/shield it gives
+@export var bonus_dice: int = 0 # Number of bonus dice to give when activated
 @export var description: String
 @export var icon: Texture2D
 @export var price: int = 3

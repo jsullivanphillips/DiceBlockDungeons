@@ -1,5 +1,7 @@
 extends Camera2D
 
+class_name CameraShake
+
 var shake_strength = 0
 var shake_decay = 0
 var random = RandomNumberGenerator.new()

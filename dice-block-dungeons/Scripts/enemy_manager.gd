@@ -13,7 +13,9 @@ var current_enemy_index : int
 
 signal enemy_health_changed(old_health : int, new_health : int)
 signal enemy_damage_changed(value : int)
+signal enemy_name_changed(enemy_name: String)
 signal enemy_died()
+signal game_won()
 
 var is_enemy_dead : bool
 
@@ -35,6 +37,9 @@ func next_enemy():
 		enemy_damage = enemy.damage
 		enemy_damage_changed.emit(enemy_damage)
 		enemy_health_changed.emit(0, enemy_health)
+		enemy_name_changed.emit(enemy.name)
+	else:
+		game_won.emit()
 
 
 func run_enemy_turn():
@@ -44,6 +49,9 @@ func run_enemy_turn():
 	await get_tree().create_timer(1.0).timeout
 	player_state.apply_damage(enemy_damage)
 	SFXManager.play_sfx("hit")
+	await get_tree().create_timer(0.5).timeout
+	enemy_damage = max(1, enemies[current_enemy_index].damage + randi_range(-1, 1))
+	enemy_damage_changed.emit(enemy_damage)
 
 
 func deal_damage(damage: int):

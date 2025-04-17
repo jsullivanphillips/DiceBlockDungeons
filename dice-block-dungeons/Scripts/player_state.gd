@@ -2,15 +2,19 @@ extends Node
 
 class_name PlayerState
 
+var camera : CameraShake
 
-func _ready():
+func restart_game():
+	health = max_health
+	shield = 0
+	coins = 10
 	setup_initial_dice()
-
 #
 # Health and Shield
 #
 signal health_changed(old_value: int, new_value: int)
 signal shield_changed(old_value: int, new_value: int)
+signal game_over()
 
 var max_health := 15
 var health := 15:
@@ -36,6 +40,9 @@ func apply_damage(amount: int):
 		amount -= absorbed
 	if amount > 0:
 		health -= amount
+		camera.shake()
+		if health <= 0:
+			game_over.emit()
 
 func heal(amount: int):
 	health += amount
@@ -48,13 +55,15 @@ func add_shield(amount: int):
 # Players Dice
 #
 signal dice_collection_changed
+signal number_of_dice_changed(number_of_dice: int)
 
 # Player's dice pool
 var dice_inventory: Array[DieData] = []
 
 
 func setup_initial_dice():
-	for i in range(3):
+	dice_inventory.clear()
+	for i in range(2):
 		var die := DieData.new()
 		die.min_value = 1
 		die.max_value = 6
@@ -64,11 +73,13 @@ func setup_initial_dice():
 func add_die(die_data: DieData) -> void:
 	dice_inventory.append(die_data)
 	dice_collection_changed.emit()
+	number_of_dice_changed.emit(dice_inventory.size())
 
 
 func remove_die(die_data: DieData) -> void:
 	dice_inventory.erase(die_data)
 	dice_collection_changed.emit()
+	number_of_dice_changed.emit(dice_inventory.size())
 
 
 func get_random_die() -> DieData:
@@ -88,6 +99,10 @@ var coins: int = 5:
 			var old = coins
 			coins = value
 			coins_changed.emit(old, coins)
+
+func set_starting_coins(p_coins : int) -> void:
+	coins = p_coins
+
 
 func add_coins(amount: int) -> void:
 	for i in range(amount):

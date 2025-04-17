@@ -10,26 +10,17 @@ script = ExtResource("1_t5bfv")
 [node name="ShapeDropdown" type="OptionButton" parent="."]
 layout_mode = 2
 selected = 0
-item_count = 9
+item_count = 3
 popup/item_0/text = "L"
-popup/item_1/text = "J"
+popup/item_1/text = "LongBoy"
 popup/item_1/id = 1
-popup/item_2/text = "Corner"
+popup/item_2/text = "Shuriken"
 popup/item_2/id = 2
-popup/item_3/text = "3"
-popup/item_3/id = 3
-popup/item_4/text = "Z"
-popup/item_4/id = 4
-popup/item_5/text = "S"
-popup/item_5/id = 5
-popup/item_6/text = "T_1"
-popup/item_6/id = 6
-popup/item_7/text = "T_2"
-popup/item_7/id = 7
-popup/item_8/text = "Square"
-popup/item_8/id = 8
 
 [node name="AttackHBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="AttackValueLabel" type="Label" parent="AttackHBox"]
 layout_mode = 2
 
 [node name="Attack" type="Label" parent="AttackHBox"]
@@ -45,6 +36,9 @@ value = 1.0
 [node name="ShieldHBox" type="HBoxContainer" parent="."]
 layout_mode = 2
 
+[node name="ShieldValueLabel" type="Label" parent="ShieldHBox"]
+layout_mode = 2
+
 [node name="Shield" type="Label" parent="ShieldHBox"]
 layout_mode = 2
 text = "Shield
@@ -55,14 +49,50 @@ layout_mode = 2
 size_flags_horizontal = 3
 max_value = 8.0
 
+[node name="BonusDiceHBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="BonusDiceValueLabel" type="Label" parent="BonusDiceHBox"]
+layout_mode = 2
+
+[node name="BonusDice" type="Label" parent="BonusDiceHBox"]
+layout_mode = 2
+text = "Bonus Dice"
+
+[node name="BonusDiceSlider" type="HSlider" parent="BonusDiceHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 3.0
+value = 1.0
+
 [node name="DiceHBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="DiceValueLabel" type="Label" parent="DiceHBox"]
 layout_mode = 2
 
 [node name="Dice" type="Label" parent="DiceHBox"]
 layout_mode = 2
-text = "Dice"
+text = "Dice Cost"
 
 [node name="DiceSlider" type="HSlider" parent="DiceHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 6.0
+value = 1.0
+
+[node name="PriceHBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="PriceValueLabel" type="Label" parent="PriceHBox"]
+layout_mode = 2
+
+[node name="Price" type="Label" parent="PriceHBox"]
+layout_mode = 2
+text = "Price"
+
+[node name="PriceSlider" type="HSlider" parent="PriceHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = 1.0

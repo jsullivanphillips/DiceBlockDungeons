@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3 uid="uid://od260ckg21mt"]
+
+[ext_resource type="Script" path="res://Scripts/EnemyData.gd" id="1_wxiw4"]
+
+[resource]
+script = ExtResource("1_wxiw4")
+name = "Bat"
+max_health = 5
+damage = 1
+coins_dropped = 3

@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://c8gvsqhcm7g2t"]
 
 [ext_resource type="Script" path="res://Scripts/die.gd" id="1_2eu57"]
-[ext_resource type="Shader" path="res://die.gdshader" id="1_nusfi"]
+[ext_resource type="Shader" path="res://Shaders/die.gdshader" id="1_nusfi"]
 [ext_resource type="Texture2D" uid="uid://b1d7ibatk6rfh" path="res://kenney_board-game-icons/Die Slots.png" id="2_0qade"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_gu7nh"]

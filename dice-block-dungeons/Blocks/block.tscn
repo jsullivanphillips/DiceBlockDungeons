@@ -31,6 +31,7 @@ script = ExtResource("1_vmo1j")
 damage_value = 3
 
 [node name="TileMapLayer" type="TileMapLayer" parent="."]
+modulate = Color(0, 0, 0, 1)
 tile_set = SubResource("TileSet_vgr7a")
 
 [node name="Label" type="Label" parent="."]

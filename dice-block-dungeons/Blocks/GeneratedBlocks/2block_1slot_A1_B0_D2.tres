@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="BlockResource" load_steps=3 format=3 uid="uid://ddialprvd7afe"]
+
+[ext_resource type="PackedScene" uid="uid://210uidd5twrc" path="res://Blocks/block.tscn" id="1_f06d7"]
+[ext_resource type="Script" path="res://Blocks/BlockResource.gd" id="2_ibuuv"]
+
+[resource]
+script = ExtResource("2_ibuuv")
+display_name = "2block_1slot A1 B0 D0 DC2"
+scene = ExtResource("1_f06d7")
+shape_id = "2block_1slot"
+rarity = 0
+dice_cost = 3
+attack = 1
+shield = 0
+bonus_dice = 0
+description = ""
+price = 4
