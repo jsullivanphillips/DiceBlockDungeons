@@ -6,5 +6,5 @@
 script = ExtResource("1_mo2pa")
 name = "Red Dragon"
 max_health = 25
-damage = 4
-coins_dropped = 20
+damage = 5
+coins_dropped = 15

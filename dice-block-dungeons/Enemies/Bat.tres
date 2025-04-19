@@ -7,4 +7,4 @@ script = ExtResource("1_wxiw4")
 name = "Bat"
 max_health = 5
 damage = 1
-coins_dropped = 3
+coins_dropped = 5

@@ -11,7 +11,9 @@ config_version=5
 [application]
 
 config/name="Dice Block Dungeons"
+run/main_scene="res://Scenes/main.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
+boot_splash/bg_color=Color(0.157879, 0.117542, 0.212313, 1)
 
 [autoload]
 
@@ -21,6 +23,7 @@ SFXManager="*res://SFX/sfx.tscn"
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/size/mode=3
 window/stretch/mode="canvas_items"
 
 [editor_plugins]
