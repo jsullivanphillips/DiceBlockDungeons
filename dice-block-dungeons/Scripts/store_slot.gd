@@ -5,7 +5,6 @@ class_name StoreSlot
 signal purchase_requested(resource: BlockResource)
 
 @onready var name_label := $NameLabel
-@onready var price_label := $PriceLabel
 @onready var buy_button := $BuyButton
 @onready var block_preview_viewport := $BlockPreview/PreviewViewport
 
@@ -17,7 +16,7 @@ func _ready():
 func setup(item: BlockResource):
 	resource = item
 	name_label.text = _format_block_stats(item)
-	price_label.text = "💰 " + str(item.price)
+	buy_button.text = "Buy (" + str(item.price) + "g)"
 
 	# Clear previous preview
 	for child in block_preview_viewport.get_children():
@@ -44,12 +43,12 @@ func setup(item: BlockResource):
 func _format_block_stats(item: BlockResource) -> String:
 	var parts = []
 	if item.attack > 0:
-		parts.append(str(item.attack) + " atk")
+		parts.append("Deals " + str(item.attack) + " damage")
 	if item.shield > 0:
-		parts.append(str(item.shield) + " blk")
+		parts.append("Gives " + str(item.shield) + " shield")
 	if item.bonus_dice > 0:
-		parts.append(str(item.bonus_dice) + " 🎲")
-	parts.append("Dice Cost: " + str(item.dice_cost))
+		parts.append("Gives " + str(item.bonus_dice) + " bonus die 🎲")
+	parts.append("Dice Cost to Activate: " + str(item.dice_cost))
 	return "  •  ".join(parts)
 
 

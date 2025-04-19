@@ -43,8 +43,7 @@ func _ready() -> void:
 
 func _post_ready() -> void:
 	enemy_manager.set_first_enemy()
-	player_state.setup_initial_dice()
-	player_state.call_deferred("set_starting_coins", 10)
+	player_state.setup_game()
 	ui_bridge.show_shop_interface()
 
 

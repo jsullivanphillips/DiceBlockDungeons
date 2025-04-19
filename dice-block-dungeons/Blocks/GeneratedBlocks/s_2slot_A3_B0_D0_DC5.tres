@@ -5,12 +5,12 @@
 
 [resource]
 script = ExtResource("2_nd4wx")
-display_name = "s_2slot A4 B0 D0 DC6"
+display_name = "s_2slot A3 B0 D0 DC5"
 scene = ExtResource("1_mhw01")
 shape_id = "s_2slot"
 rarity = 3
-dice_cost = 6
-attack = 4
+dice_cost = 5
+attack = 3
 shield = 0
 bonus_dice = 0
 description = ""

@@ -10,9 +10,9 @@ signal exit_requested()
 signal buy_die_requested()
 
 @onready var item_slot_container := $VBoxContainer/ItemSlotHBox
-@onready var reroll_button := $VBoxContainer/HBoxContainer2/RerollButton
+@onready var reroll_button := $VBoxContainer/RerollButton
 @onready var exit_button := $VBoxContainer/HBoxContainer2/ExitButton
-@onready var buy_die_button := $VBoxContainer/HBoxContainer2/BuyDieButton
+@onready var buy_die_button := $VBoxContainer/BuyDieButton
 @onready var store_slot_scene := preload("res://Scenes/store_slot.tscn")
 
 func _ready():

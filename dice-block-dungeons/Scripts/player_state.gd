@@ -5,18 +5,26 @@ class_name PlayerState
 var camera : CameraShake
 
 func restart_game():
-	health = max_health
-	shield = 0
-	coins = 10
+	setup_game()
+
+func setup_game():
+	set_starting_coins(10)
 	setup_initial_dice()
+	shield = 0
+	health = max_health
+	max_health_changed.emit(max_health)
 #
 # Health and Shield
 #
 signal health_changed(old_value: int, new_value: int)
+signal max_health_changed(new_value: int)
 signal shield_changed(old_value: int, new_value: int)
 signal game_over()
 
-var max_health := 15
+var max_health := 15:
+	set(value):
+		max_health = value
+		max_health_changed.emit(value)
 var health := 15:
 	set(value):
 		value = clamp(value, 0, max_health)

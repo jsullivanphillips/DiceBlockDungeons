@@ -12,6 +12,7 @@ var enemy_health := 10
 var current_enemy_index : int
 
 signal enemy_health_changed(old_health : int, new_health : int)
+signal enemy_max_health_set(max_health: int)
 signal enemy_damage_changed(value : int)
 signal enemy_name_changed(enemy_name: String)
 signal enemy_died()
@@ -34,6 +35,7 @@ func next_enemy():
 		is_enemy_dead = false
 		var enemy = enemies[current_enemy_index]
 		enemy_health = enemy.max_health
+		enemy_max_health_set.emit(enemy_health)
 		enemy_damage = enemy.damage
 		enemy_damage_changed.emit(enemy_damage)
 		enemy_health_changed.emit(0, enemy_health)

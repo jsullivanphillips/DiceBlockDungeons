@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://d3xqk4hlg4v6l"]
+[gd_scene load_steps=24 format=3 uid="uid://d3xqk4hlg4v6l"]
 
 [ext_resource type="PackedScene" uid="uid://dmgddsls2wgwn" path="res://Scenes/backpack.tscn" id="1_i6rlt"]
 [ext_resource type="Script" path="res://Scripts/block_manager.gd" id="1_s5g1a"]
@@ -26,15 +26,23 @@ script/source = "extends Control
 
 @onready var coins_label := $Coins
 @onready var enemy_health := $EnemyHP
+@onready var enemy_health_slider := $EnemyHealthBar
+@onready var delayed_enemy_health_slider := $DelayedHealthBar
+@onready var player_health_bar := $PlayerHealthPanel/PlayerHealthBar
+@onready var delayed_player_health_bar := $PlayerHealthPanel/DelayedPlayerHealthBar
 @onready var enemy_name := $EnemyName
-@onready var player_health := $PlayerHP
-@onready var player_block := $PlayerBlock
+@onready var player_health := $PlayerHealthPanel/PlayerHP
+@onready var player_shield_label := $PlayerHealthPanel/PlayerBlock
 @onready var enemy_damage := $EnemyNextMove
 @onready var start_battle_button := $StartBattle
 @onready var end_turn_button := $\"End Turn\"
 @onready var show_add_tiles_button := $ShowAddTiles
 @onready var dice_label := $Dice
 @onready var restart_game_button := $RestartGameButton
+@onready var you_win_screen := $YouWinScreen
+
+@onready var enemy_health_tween := create_tween()
+@onready var player_health_tween := create_tween()
 
 var text_color := Color.WHITE
 
@@ -52,6 +60,13 @@ func set_restart_game_visibility(set_visible: bool)-> void:
 		restart_game_button.hide()
 
 
+func show_you_win():
+	you_win_screen.show()
+	await get_tree().create_timer(3).timeout
+	you_win_screen.hide()
+	set_restart_game_visibility(true)
+
+
 func set_end_turn_visibility(set_visible: bool)-> void:
 	if set_visible:
 		end_turn_button.show()
@@ -61,10 +76,14 @@ func set_end_turn_visibility(set_visible: bool)-> void:
 func set_enemy_stat_visibility(set_visible: bool)-> void:
 	if set_visible:
 		enemy_health.show()
+		enemy_health_slider.show()
+		delayed_enemy_health_slider.show()
 		enemy_damage.show()
 		enemy_name.show()
 	else:
 		enemy_health.hide()
+		enemy_health_slider.hide()
+		delayed_enemy_health_slider.hide()
 		enemy_damage.hide()
 		enemy_name.hide()
 
@@ -77,27 +96,66 @@ func set_add_tiles_visibility(set_visible: bool)-> void:
 func update_number_of_dice(num_of_dice: int) -> void:
 	dice_label.text = \"| Dice: \" + str(num_of_dice)
 
-func _on_battle_manager_enemy_health_changed(new_health: int) -> void:
+func _on_enemy_health_changed(old_health: int, new_health: int) -> void:
 	if enemy_health:
-		enemy_health.text = \"ENEMY HP: \" + str(new_health)
+		flash_label(enemy_health, Color.RED, 0.3)
+		enemy_health.text = \"HP: \" + str(new_health)
+		enemy_health_slider.value = new_health
+		
+		if enemy_health_tween.is_running():
+			enemy_health_tween.kill()
+		# Delay and tween the red bar to the new value
+		enemy_health_tween = create_tween()
+		enemy_health_tween.tween_property(delayed_enemy_health_slider, \"value\", new_health, 1)\\
+			.set_delay(0.5)\\
+			.set_trans(Tween.TRANS_QUAD)\\
+			.set_ease(Tween.EASE_OUT)
 	else:
 		call_deferred(\"_on_battle_manager_enemy_health_changed\", new_health)
+
+func set_enemy_max_health(max_health: int) -> void:
+	enemy_health_slider.max_value = max_health
+	enemy_health_slider.value = max_health
+	delayed_enemy_health_slider.max_value = max_health
+	delayed_enemy_health_slider.value = max_health
 
 func set_enemy_name(p_enemy_name: String)-> void:
 	enemy_name.text = p_enemy_name
 
-func _on_battle_manager_player_health_changed(new_health: int) -> void:
+
+func _on_player_max_health_changed(new_value: int) -> void:
+	player_health_bar.max_value = new_value
+	delayed_player_health_bar.max_value = new_value
+	
+	player_health_bar.value = new_value
+	delayed_player_health_bar.value = new_value
+
+
+func _on_player_health_changed(old_value: int, new_value: int) -> void:
 	if player_health:
-		player_health.text = \"PLAYER HP: \" + str(new_health)
+		flash_label(player_health, Color.RED, 0.3)
+		player_health.text = \"HP: \" + str(new_value)
+		player_health_bar.value = new_value
+		
+		if player_health_tween.is_running():
+			player_health_tween.kill()
+		# Delay and tween the red bar to the new value
+		player_health_tween = create_tween()
+		player_health_tween.tween_property(delayed_player_health_bar, \"value\", new_value, 1)\\
+			.set_delay(0.5)\\
+			.set_trans(Tween.TRANS_QUAD)\\
+			.set_ease(Tween.EASE_OUT)
+		
 	else:
-		call_deferred(\"_on_battle_manager_player_health_changed\", new_health)
+		call_deferred(\"_on_battle_manager_player_health_changed\", new_value)
 
 
 func _on_battle_manager_player_shield_changed(new_value: int) -> void:
-	if player_block:
-		player_block.text = \"PLAYER SHIELD: \" + str(new_value)
+	if player_shield_label:
+		player_shield_label.text = \"SHIELD: \" + str(new_value)
+		flash_label(player_shield_label, Color.SKY_BLUE, 0.3)
 		if new_value != 0:
-			flash_label(player_block, Color.BLUE, 0.5)
+			flash_label(player_shield_label, Color.BLUE, 0.5)
 	else:
 		call_deferred(\"_on_battle_manager_player_shield_changed\", new_value)
 
@@ -114,9 +172,6 @@ func flash_label(label: Label, flash_color: Color = Color.RED, duration := 0.3):
 	await get_tree().create_timer(duration).timeout
 	label.modulate = original_color
 
-
-func _on_battle_manager_enemy_took_damage(_damage: int) -> void:
-	flash_label(enemy_health)
 
 
 func _on_block_manager_coin_value_changed(start_value: int, end_value: int) -> void:
@@ -136,6 +191,12 @@ func _on_block_manager_coin_value_changed(start_value: int, end_value: int) -> v
 	else:
 		call_deferred(\"_on_block_manager_coin_value_changed\", start_value, end_value)
 "
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vcj8d"]
+bg_color = Color(0.78, 0.1482, 0.1482, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fw4lp"]
+bg_color = Color(0.348, 0.9, 0.072, 1)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_uj771")
@@ -237,57 +298,134 @@ grow_horizontal = 2
 grow_vertical = 2
 script = SubResource("GDScript_2y7ui")
 
-[node name="PlayerHP" type="Label" parent="UI/Interface"]
+[node name="PlayerHealthPanel" type="Panel" parent="UI/Interface"]
 layout_mode = 1
-anchors_preset = 2
+anchors_preset = 7
+anchor_left = 0.5
 anchor_top = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = 241.0
-offset_top = -130.0
-offset_right = 557.0
-offset_bottom = -61.0
+offset_left = -294.0
+offset_top = -224.0
+offset_right = 294.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PlayerHP" type="Label" parent="UI/Interface/PlayerHealthPanel"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -158.0
+offset_top = -141.0
+offset_right = 158.0
+offset_bottom = -72.0
+grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.693, 0.9, 0.7068, 1)
 theme_override_font_sizes/font_size = 50
-text = "Player HP: 15"
+text = "HP: 15"
+horizontal_alignment = 1
 
-[node name="PlayerBlock" type="Label" parent="UI/Interface"]
+[node name="PlayerBlock" type="Label" parent="UI/Interface/PlayerHealthPanel"]
 layout_mode = 1
-anchors_preset = 2
+anchors_preset = 7
+anchor_left = 0.5
 anchor_top = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = 241.0
+offset_left = -158.0
 offset_top = -209.0
-offset_right = 557.0
+offset_right = 158.0
 offset_bottom = -140.0
+grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.71, 0.835667, 1, 1)
 theme_override_font_sizes/font_size = 50
-text = "BLOCK: 0"
+text = "SHIELD 0"
+horizontal_alignment = 1
+
+[node name="DelayedPlayerHealthBar" type="ProgressBar" parent="UI/Interface/PlayerHealthPanel"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -265.0
+offset_top = 164.0
+offset_right = 265.0
+offset_bottom = 194.0
+grow_horizontal = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_vcj8d")
+show_percentage = false
+
+[node name="PlayerHealthBar" type="ProgressBar" parent="UI/Interface/PlayerHealthPanel"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -265.0
+offset_top = -60.0
+offset_right = 265.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/fill = SubResource("StyleBoxFlat_fw4lp")
+step = 1.0
+show_percentage = false
 
 [node name="EnemyHP" type="Label" parent="UI/Interface"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -1117.0
+offset_left = -1126.0
 offset_top = 128.0
-offset_right = -789.0
+offset_right = -798.0
 offset_bottom = 197.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 40
 text = "ENEMY HP"
 horizontal_alignment = 1
 
+[node name="DelayedHealthBar" type="ProgressBar" parent="UI/Interface"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -163.0
+offset_top = 188.0
+offset_right = 155.0
+offset_bottom = 215.0
+grow_horizontal = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_vcj8d")
+show_percentage = false
+
+[node name="EnemyHealthBar" type="ProgressBar" parent="UI/Interface"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -163.0
+offset_top = 188.0
+offset_right = 155.0
+offset_bottom = 215.0
+grow_horizontal = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_fw4lp")
+step = 1.0
+show_percentage = false
+
 [node name="EnemyName" type="Label" parent="UI/Interface"]
-visible = false
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -1117.0
+offset_left = -1124.0
 offset_top = 52.0
-offset_right = -789.0
+offset_right = -796.0
 offset_bottom = 121.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 40
@@ -300,9 +438,9 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -1117.0
-offset_top = 211.0
+offset_top = 227.0
 offset_right = -789.0
-offset_bottom = 280.0
+offset_bottom = 296.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 40
 text = "ENEMY DMG"
@@ -316,25 +454,26 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -100.0
-offset_top = -135.0
-offset_right = 100.0
-offset_bottom = -55.0
+offset_left = 655.0
+offset_top = -158.0
+offset_right = 855.0
+offset_bottom = -78.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Start Battle"
 
 [node name="End Turn" type="Button" parent="UI/Interface"]
+visible = false
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -100.0
-offset_top = -132.0
-offset_right = 100.0
-offset_bottom = -52.0
+offset_left = 657.0
+offset_top = -160.0
+offset_right = 857.0
+offset_bottom = -80.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "End Turn"
@@ -372,12 +511,13 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -1645.0
-offset_top = 50.0
-offset_right = -1457.0
-offset_bottom = 119.0
+offset_left = -1891.0
+offset_top = 1021.0
+offset_right = -1703.0
+offset_bottom = 1090.0
 grow_horizontal = 0
-theme_override_font_sizes/font_size = 40
+theme_override_colors/font_color = Color(0.97, 0.84778, 0.5626, 1)
+theme_override_font_sizes/font_size = 35
 text = "Coins: 3"
 
 [node name="Dice" type="Label" parent="UI/Interface"]
@@ -385,13 +525,14 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -1474.0
-offset_top = 50.0
-offset_right = -1286.0
-offset_bottom = 119.0
+offset_left = -1736.0
+offset_top = 1008.0
+offset_right = -1548.0
+offset_bottom = 1077.0
 grow_horizontal = 0
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 35
 text = "| Dice: 2"
+vertical_alignment = 1
 
 [node name="ShowAddTiles" type="Button" parent="UI/Interface"]
 layout_mode = 1
@@ -405,15 +546,40 @@ offset_bottom = 122.0
 grow_horizontal = 2
 text = "Add Slots (1g each)"
 
+[node name="YouWinScreen" type="Panel" parent="UI/Interface"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="YouWinLabel" type="Label" parent="UI/Interface/YouWinScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -34.0
+offset_top = -11.5
+offset_right = 34.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 100
+text = "You Win!"
+
 [node name="StoreUI" parent="UI" instance=ExtResource("15_5jsju")]
 anchors_preset = 4
 anchor_top = 0.5
 anchor_right = 0.0
 anchor_bottom = 0.5
-offset_left = 90.0
-offset_top = -96.0
-offset_right = 90.0
-offset_bottom = -96.0
+offset_left = 253.0
+offset_top = -21.0
+offset_right = 253.0
+offset_bottom = -21.0
 grow_horizontal = 1
 
 [node name="SFX" parent="." instance=ExtResource("14_wyb44")]
@@ -422,12 +588,14 @@ grow_horizontal = 1
 [connection signal="coins_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_coins_changed"]
 [connection signal="game_over" from="PlayerState" to="GameFlowManager" method="on_player_health_less_than_zero"]
 [connection signal="health_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_health_changed"]
+[connection signal="max_health_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_max_health_changed"]
 [connection signal="number_of_dice_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_number_of_dice_changed"]
 [connection signal="shield_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_shield_changed"]
 [connection signal="slot_purchased" from="StoreManager" to="UI/UIBridge" method="_on_store_manager_slot_purchased"]
 [connection signal="store_opened" from="StoreManager" to="UI/StoreUI" method="open_store"]
 [connection signal="enemy_damage_changed" from="EnemyManager" to="UI/UIBridge" method="_on_enemy_manager_enemy_damage_changed"]
 [connection signal="enemy_health_changed" from="EnemyManager" to="UI/UIBridge" method="_on_enemy_manager_enemy_health_changed"]
+[connection signal="enemy_max_health_set" from="EnemyManager" to="UI/UIBridge" method="set_enemy_max_health"]
 [connection signal="enemy_name_changed" from="EnemyManager" to="UI/UIBridge" method="_on_enemy_manager_enemy_name_changed"]
 [connection signal="game_won" from="EnemyManager" to="GameFlowManager" method="_on_enemy_manager_game_won"]
 [connection signal="slot_purchased" from="UI/UIBridge" to="UI/StoreUI" method="_on_ui_bridge_slot_purchased"]
