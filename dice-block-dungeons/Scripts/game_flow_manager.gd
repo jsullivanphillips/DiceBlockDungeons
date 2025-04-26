@@ -56,6 +56,7 @@ func player_turn_over():
 func request_start_game():
 	if current_state == GameState.IDLE:
 		ui_bridge.hide_shop_interface()
+		backpack.hide_add_tiles()
 		change_state(GameState.PLAYER_TURN_START)
 	else:
 		push_warning("Start Game requested but game already started or not in IDLE state.")
@@ -108,12 +109,14 @@ func change_state(new_state: GameState) -> void:
 			change_state(GameState.PLAYER_INPUT)
 
 		GameState.PLAYER_INPUT:
+			ui_bridge.set_end_turn_visibility(true)
 			pass  # Wait for input (player drops a die)
 
 		GameState.PROCESSING_COMBAT:
 			pass  # Handled by start_combat_processing()
 
 		GameState.ENEMY_TURN:
+			ui_bridge.set_end_turn_visibility(false)
 			await enemy_manager.run_enemy_turn()
 			await get_tree().create_timer(1).timeout
 			if current_state != GameState.GAME_OVER and current_state != GameState.GAME_WON:

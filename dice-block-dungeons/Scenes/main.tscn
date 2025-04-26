@@ -41,20 +41,20 @@ script/source = "extends Control
 @onready var restart_game_button := $RestartGameButton
 @onready var you_win_screen := $YouWinScreen
 
-@onready var enemy_health_tween := create_tween()
-@onready var player_health_tween := create_tween()
+@onready var enemy_health_tween : Tween
+@onready var player_health_tween : Tween
 
 var text_color := Color.WHITE
 
-func set_start_battle_visibility(set_visible: bool)-> void:
-	if set_visible:
+func set_start_battle_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
 		start_battle_button.show()
 	else:
 		start_battle_button.hide()
 
 
-func set_restart_game_visibility(set_visible: bool)-> void:
-	if set_visible:
+func set_restart_game_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
 		restart_game_button.show()
 	else:
 		restart_game_button.hide()
@@ -67,14 +67,14 @@ func show_you_win():
 	set_restart_game_visibility(true)
 
 
-func set_end_turn_visibility(set_visible: bool)-> void:
-	if set_visible:
+func set_end_turn_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
 		end_turn_button.show()
 	else:
 		end_turn_button.hide()
 
-func set_enemy_stat_visibility(set_visible: bool)-> void:
-	if set_visible:
+func set_enemy_stat_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
 		enemy_health.show()
 		enemy_health_slider.show()
 		delayed_enemy_health_slider.show()
@@ -87,8 +87,8 @@ func set_enemy_stat_visibility(set_visible: bool)-> void:
 		enemy_damage.hide()
 		enemy_name.hide()
 
-func set_add_tiles_visibility(set_visible: bool)-> void:
-	if set_visible:
+func set_add_tiles_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
 		show_add_tiles_button.show()
 	else:
 		show_add_tiles_button.hide()
@@ -96,20 +96,22 @@ func set_add_tiles_visibility(set_visible: bool)-> void:
 func update_number_of_dice(num_of_dice: int) -> void:
 	dice_label.text = \"| Dice: \" + str(num_of_dice)
 
-func _on_enemy_health_changed(old_health: int, new_health: int) -> void:
+func _on_enemy_health_changed(_old_health: int, new_health: int) -> void:
 	if enemy_health:
 		flash_label(enemy_health, Color.RED, 0.3)
 		enemy_health.text = \"HP: \" + str(new_health)
 		enemy_health_slider.value = new_health
 		
-		if enemy_health_tween.is_running():
+		# kill old one (if still running)
+		if enemy_health_tween and enemy_health_tween.is_running():
 			enemy_health_tween.kill()
 		# Delay and tween the red bar to the new value
-		enemy_health_tween = create_tween()
-		enemy_health_tween.tween_property(delayed_enemy_health_slider, \"value\", new_health, 1)\\
-			.set_delay(0.5)\\
-			.set_trans(Tween.TRANS_QUAD)\\
-			.set_ease(Tween.EASE_OUT)
+		if delayed_enemy_health_slider.value != new_health:
+			enemy_health_tween = create_tween()
+			enemy_health_tween.tween_property(delayed_enemy_health_slider, \"value\", new_health, 1)\\
+				.set_delay(0.5)\\
+				.set_trans(Tween.TRANS_QUAD)\\
+				.set_ease(Tween.EASE_OUT)
 	else:
 		call_deferred(\"_on_battle_manager_enemy_health_changed\", new_health)
 
@@ -131,26 +133,27 @@ func _on_player_max_health_changed(new_value: int) -> void:
 	delayed_player_health_bar.value = new_value
 
 
-func _on_player_health_changed(old_value: int, new_value: int) -> void:
+func _on_player_health_changed(_old_value: int, new_value: int) -> void:
 	if player_health:
 		flash_label(player_health, Color.RED, 0.3)
 		player_health.text = \"HP: \" + str(new_value)
 		player_health_bar.value = new_value
 		
-		if player_health_tween.is_running():
+		if player_health_tween and player_health_tween.is_running():
 			player_health_tween.kill()
 		# Delay and tween the red bar to the new value
-		player_health_tween = create_tween()
-		player_health_tween.tween_property(delayed_player_health_bar, \"value\", new_value, 1)\\
-			.set_delay(0.5)\\
-			.set_trans(Tween.TRANS_QUAD)\\
-			.set_ease(Tween.EASE_OUT)
+		if delayed_player_health_bar.value != new_value:
+			player_health_tween = create_tween()
+			player_health_tween.tween_property(delayed_player_health_bar, \"value\", new_value, 1)\\
+				.set_delay(0.5)\\
+				.set_trans(Tween.TRANS_QUAD)\\
+				.set_ease(Tween.EASE_OUT)
 		
 	else:
 		call_deferred(\"_on_battle_manager_player_health_changed\", new_value)
 
 
-func _on_battle_manager_player_shield_changed(new_value: int) -> void:
+func _on_player_shield_changed(new_value: int) -> void:
 	if player_shield_label:
 		player_shield_label.text = \"SHIELD: \" + str(new_value)
 		flash_label(player_shield_label, Color.SKY_BLUE, 0.3)
@@ -174,9 +177,9 @@ func flash_label(label: Label, flash_color: Color = Color.RED, duration := 0.3):
 
 
 
-func _on_block_manager_coin_value_changed(start_value: int, end_value: int) -> void:
+func _on_coin_value_changed(start_value: int, end_value: int) -> void:
 	if coins_label:
-		if start_value != end_value:
+		if start_value < end_value:
 			var current_value = start_value
 			var step = 1 if end_value > start_value else -1
 

@@ -72,7 +72,6 @@ func set_stats_from_resource(block_resource: BlockResource):
 		tilemap.modulate = Color.from_hsv(0.3, 0.5, 0.9)
 
 func generate_shape_from_resource(block_resource: BlockResource):
-	var shape_data = BlockShapeLibrary.get_shape_data(block_resource.shape_id)
 	var tiles = BlockShapeLibrary.get_tiles(block_resource.shape_id)
 	var offset = BlockShapeLibrary.get_offset(block_resource.shape_id)
 	

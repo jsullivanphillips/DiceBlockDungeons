@@ -7,7 +7,6 @@ var player_state: PlayerState
 var block_manager: BlockManager
 
 signal store_opened(shop_inventory: Array[BlockResource])
-signal store_closed
 signal slot_purchased(slot: StoreSlot)
 
 var block_pool: Array[BlockResource] = []

@@ -38,7 +38,6 @@ func _on_show_add_tiles_pressed() -> void:
 	backpack._on_show_add_tiles_pressed()
 
 
-
 func _on_player_state_health_changed(old_value: int, new_value: int) -> void:
 	interface._on_player_health_changed(old_value, new_value)
 	
@@ -86,7 +85,8 @@ func hide_shop_interface() -> void:
 	set_add_tiles_visibility(false)
 	set_end_turn_visibility(true)
 	interface.set_enemy_stat_visibility(true)
-	
+
+
 func set_start_battle_visibility(set_visible: bool)-> void:
 	interface.set_start_battle_visibility(set_visible)
 
@@ -121,3 +121,11 @@ func _on_player_state_max_health_changed(new_value: int) -> void:
 
 func _on_enemy_manager_enemy_damage_changed(value: int) -> void:
 	interface._on_enemy_damage_changed(value)
+
+
+func _on_player_state_coins_changed(old_value: int, new_value: int) -> void:
+	interface._on_coin_value_changed(old_value, new_value)
+
+
+func _on_player_state_shield_changed(_old_value: int, new_value: int) -> void:
+	interface._on_player_shield_changed(new_value)
