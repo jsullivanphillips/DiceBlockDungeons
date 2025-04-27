@@ -119,6 +119,25 @@ func _on_player_state_max_health_changed(new_value: int) -> void:
 	interface._on_player_max_health_changed(new_value)
 
 
+func flash_enemy_red():
+	interface.flash_enemy_red()
+
+
+func set_enemy_image(tex: Texture2D) -> void:
+	interface.set_enemy_image(tex)
+
+
+func start_enemy_idle_animation():
+	interface.start_enemy_idle_animation()
+
+func play_enemy_attack_animation():
+	interface.play_enemy_attack_animation()
+	
+
+func stop_enemy_idle_animation():
+	interface.stop_enemy_idle_animation()
+
+
 func _on_enemy_manager_enemy_damage_changed(value: int) -> void:
 	interface._on_enemy_damage_changed(value)
 

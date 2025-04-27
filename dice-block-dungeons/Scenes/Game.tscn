@@ -1,0 +1,717 @@
+[gd_scene load_steps=24 format=3 uid="uid://d3xqk4hlg4v6l"]
+
+[ext_resource type="Script" path="res://Scripts/main.gd" id="1_1qlyb"]
+[ext_resource type="Script" path="res://Scripts/block_manager.gd" id="2_63tee"]
+[ext_resource type="PackedScene" uid="uid://dmgddsls2wgwn" path="res://Scenes/backpack.tscn" id="3_6l1ln"]
+[ext_resource type="Script" path="res://Scripts/dice_manager.gd" id="4_xdnoq"]
+[ext_resource type="Script" path="res://Scripts/camera_2d.gd" id="5_hb57m"]
+[ext_resource type="Script" path="res://Scripts/input_manager.gd" id="6_5tswc"]
+[ext_resource type="Script" path="res://Scripts/player_state.gd" id="7_a0626"]
+[ext_resource type="Script" path="res://Scripts/store_manager.gd" id="8_k1dvx"]
+[ext_resource type="Script" path="res://Scripts/enemy_manager.gd" id="9_nn1lf"]
+[ext_resource type="Script" path="res://Scripts/EnemyData.gd" id="10_wkjfx"]
+[ext_resource type="Resource" uid="uid://od260ckg21mt" path="res://Enemies/EnemyData/Bat.tres" id="11_ri7dy"]
+[ext_resource type="Resource" uid="uid://bfaofgramkd05" path="res://Enemies/EnemyData/Snail.tres" id="12_y0neb"]
+[ext_resource type="Resource" uid="uid://dfs4nddngjumt" path="res://Enemies/EnemyData/Ghost.tres" id="13_kksy0"]
+[ext_resource type="Resource" uid="uid://b2wbiw4ldjc2b" path="res://Enemies/EnemyData/SlimeGreen.tres" id="14_mjw1v"]
+[ext_resource type="Resource" uid="uid://cxq2bgsj64gk2" path="res://Enemies/EnemyData/Spider.tres" id="15_ds2hl"]
+[ext_resource type="Script" path="res://Scripts/game_flow_manager.gd" id="16_cr2il"]
+[ext_resource type="Script" path="res://Scripts/combat_processor.gd" id="17_gejoc"]
+[ext_resource type="Script" path="res://Scripts/ui_bridge.gd" id="18_2bsex"]
+[ext_resource type="PackedScene" uid="uid://dr0id8m3t5vlf" path="res://Scenes/store_ui.tscn" id="19_nxhey"]
+[ext_resource type="PackedScene" uid="uid://dh2y2yw450xuh" path="res://SFX/sfx.tscn" id="20_05os1"]
+
+[sub_resource type="GDScript" id="GDScript_2y7ui"]
+script/source = "extends Control
+
+@onready var coins_label := $Coins
+
+@onready var enemy_image := $BattleInterface/EnemyImage
+@onready var enemy_health := $BattleInterface/EnemyHP
+@onready var enemy_health_slider := $BattleInterface/EnemyHealthBar
+@onready var enemy_name := $BattleInterface/EnemyName
+@onready var enemy_damage := $BattleInterface/EnemyNextMove
+@onready var delayed_enemy_health_slider := $BattleInterface/DelayedHealthBar
+
+@onready var player_health_bar := $PlayerHealthPanel/PlayerHealthBar
+@onready var delayed_player_health_bar := $PlayerHealthPanel/DelayedPlayerHealthBar
+@onready var player_health := $PlayerHealthPanel/PlayerHP
+@onready var player_shield_label := $PlayerHealthPanel/PlayerBlock
+
+@onready var start_battle_button := $StartBattle
+@onready var end_turn_button := $\"End Turn\"
+@onready var show_add_tiles_button := $ShowAddTiles
+@onready var dice_label := $Dice
+@onready var restart_game_button := $RestartGameButton
+@onready var you_win_screen := $YouWinScreen
+
+@onready var enemy_panel := $BattleInterface
+
+@onready var enemy_idle_tween : Tween
+@onready var enemy_health_tween : Tween
+@onready var player_health_tween : Tween
+
+var text_color := Color.WHITE
+
+func set_start_battle_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
+		start_battle_button.show()
+	else:
+		start_battle_button.hide()
+
+
+func start_enemy_idle_animation():
+	if not enemy_image:
+		return
+
+	# Kill any existing idle tween
+	if enemy_idle_tween and enemy_idle_tween.is_running():
+		enemy_idle_tween.kill()
+
+	# New tween for idle movement
+	enemy_idle_tween = create_tween()
+	enemy_idle_tween.set_loops()  # Loop forever
+
+	# Bob up and down
+	enemy_idle_tween.tween_property(enemy_image, \"position:y\", enemy_image.position.y - 5, 1.0)\\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	enemy_idle_tween.tween_property(enemy_image, \"position:y\", enemy_image.position.y + 5, 1.0)\\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func flash_enemy_red():
+	if not enemy_image:
+		return
+
+	# Create flash tween
+	var flash_tween = create_tween()
+	
+	var original_color = enemy_image.modulate
+	var flash_color = Color(1, 0.3, 0.3)  # Light red flash
+
+	# Step 1: Flash red quickly
+	flash_tween.tween_property(enemy_image, \"modulate\", flash_color, 0.1)\\
+		.set_trans(Tween.TRANS_LINEAR)\\
+		.set_ease(Tween.EASE_OUT)
+
+	# Step 2: Return to original color
+	flash_tween.tween_property(enemy_image, \"modulate\", original_color, 0.2)\\
+		.set_trans(Tween.TRANS_LINEAR)\\
+		.set_ease(Tween.EASE_IN_OUT)
+
+
+func play_enemy_attack_animation():
+	if not enemy_image:
+		return
+
+	# Stop idle animation if playing
+	stop_enemy_idle_animation()
+
+	# Create attack tween
+	var attack_tween = create_tween()
+
+	var original_position = enemy_image.position
+	var windup_target = original_position + Vector2(0, -50) # windup
+	var attack_target = original_position + Vector2(0, 40)  # Move 20px down toward player
+	var recovery_target = original_position + Vector2(0, -15)
+	attack_tween.tween_property(enemy_image, \"position\", windup_target, 0.75)\\
+		.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	attack_tween.tween_property(enemy_image, \"position\", attack_target, 0.15)\\
+		.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	attack_tween.tween_property(enemy_image, \"position\", recovery_target, 0.15)\\
+		.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	attack_tween.tween_property(enemy_image, \"position\", original_position, 0.6)\\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+	# When attack animation finishes, restart idle
+	attack_tween.finished.connect(start_enemy_idle_animation)
+
+
+
+func stop_enemy_idle_animation():
+	if enemy_idle_tween and enemy_idle_tween.is_running():
+		enemy_idle_tween.kill()
+
+
+func set_enemy_image(tex: Texture2D) -> void:
+	if enemy_image:
+		enemy_image.texture = tex
+
+
+func set_restart_game_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
+		restart_game_button.show()
+	else:
+		restart_game_button.hide()
+
+
+func show_you_win():
+	you_win_screen.show()
+	await get_tree().create_timer(3).timeout
+	you_win_screen.hide()
+	set_restart_game_visibility(true)
+
+
+func set_end_turn_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
+		end_turn_button.show()
+	else:
+		end_turn_button.hide()
+
+func set_enemy_stat_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
+		enemy_panel.show()
+	else:
+		enemy_panel.hide()
+
+func set_add_tiles_visibility(p_set_visible: bool)-> void:
+	if p_set_visible:
+		show_add_tiles_button.show()
+	else:
+		show_add_tiles_button.hide()
+
+func update_number_of_dice(num_of_dice: int) -> void:
+	dice_label.text = \"| Dice: \" + str(num_of_dice)
+
+func _on_enemy_health_changed(_old_health: int, new_health: int) -> void:
+	if enemy_health:
+		flash_label(enemy_health, Color.RED, 0.3)
+		enemy_health.text = \"HP: \" + str(new_health)
+		enemy_health_slider.value = new_health
+		
+		# kill old one (if still running)
+		if enemy_health_tween and enemy_health_tween.is_running():
+			enemy_health_tween.kill()
+		# Delay and tween the red bar to the new value
+		if delayed_enemy_health_slider.value != new_health:
+			enemy_health_tween = create_tween()
+			enemy_health_tween.tween_property(delayed_enemy_health_slider, \"value\", new_health, 1)\\
+				.set_delay(0.5)\\
+				.set_trans(Tween.TRANS_QUAD)\\
+				.set_ease(Tween.EASE_OUT)
+	else:
+		call_deferred(\"_on_battle_manager_enemy_health_changed\", new_health)
+
+func set_enemy_max_health(max_health: int) -> void:
+	enemy_health_slider.max_value = max_health
+	enemy_health_slider.value = max_health
+	delayed_enemy_health_slider.max_value = max_health
+	delayed_enemy_health_slider.value = max_health
+
+func set_enemy_name(p_enemy_name: String)-> void:
+	enemy_name.text = p_enemy_name
+
+
+func _on_player_max_health_changed(new_value: int) -> void:
+	player_health_bar.max_value = new_value
+	delayed_player_health_bar.max_value = new_value
+	
+	player_health_bar.value = new_value
+	delayed_player_health_bar.value = new_value
+
+
+func _on_player_health_changed(_old_value: int, new_value: int) -> void:
+	if player_health:
+		flash_label(player_health, Color.RED, 0.3)
+		player_health.text = \"HP: \" + str(new_value)
+		player_health_bar.value = new_value
+		
+		if player_health_tween and player_health_tween.is_running():
+			player_health_tween.kill()
+		# Delay and tween the red bar to the new value
+		if delayed_player_health_bar.value != new_value:
+			player_health_tween = create_tween()
+			player_health_tween.tween_property(delayed_player_health_bar, \"value\", new_value, 1)\\
+				.set_delay(0.5)\\
+				.set_trans(Tween.TRANS_QUAD)\\
+				.set_ease(Tween.EASE_OUT)
+		
+	else:
+		call_deferred(\"_on_battle_manager_player_health_changed\", new_value)
+
+
+func _on_player_shield_changed(new_value: int) -> void:
+	if player_shield_label:
+		player_shield_label.text = \"SHIELD: \" + str(new_value)
+		flash_label(player_shield_label, Color.SKY_BLUE, 0.3)
+		if new_value != 0:
+			flash_label(player_shield_label, Color.BLUE, 0.5)
+	else:
+		call_deferred(\"_on_battle_manager_player_shield_changed\", new_value)
+
+
+func _on_enemy_damage_changed(new_value: int) -> void:
+	if enemy_damage:
+		enemy_damage.text = \"ENEMY DMG: \" + str(new_value)
+	else:
+		call_deferred(\"_on_battle_manager_enemy_damage_changed\", new_value)
+
+func flash_label(label: Label, flash_color: Color = Color.RED, duration := 0.3):
+	var original_color = text_color
+	label.modulate = flash_color
+	await get_tree().create_timer(duration).timeout
+	label.modulate = original_color
+
+
+
+func _on_coin_value_changed(start_value: int, end_value: int) -> void:
+	if coins_label:
+		if start_value < end_value:
+			var current_value = start_value
+			var step = 1 if end_value > start_value else -1
+
+			while current_value != end_value:
+				current_value += step
+				coins_label.text = \"Coins: \" + str(current_value)
+				if end_value > start_value:
+					SFXManager.play_sfx(\"coin\")
+				await get_tree().create_timer(0.33).timeout
+		# Ensure final value is set (in case we overshot or skipped)
+		coins_label.text = \"Coins: \" + str(end_value)
+	else:
+		call_deferred(\"_on_block_manager_coin_value_changed\", start_value, end_value)
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vcj8d"]
+bg_color = Color(0.78, 0.1482, 0.1482, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fw4lp"]
+bg_color = Color(0.348, 0.9, 0.072, 1)
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_1qlyb")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="ColorRect" type="ColorRect" parent="Background"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.34, 0.291833, 0.2822, 1)
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="BlockManager" type="Node2D" parent="World"]
+script = ExtResource("2_63tee")
+
+[node name="Backpack" parent="World/BlockManager" instance=ExtResource("3_6l1ln")]
+
+[node name="DiceManager" type="Node2D" parent="World"]
+script = ExtResource("4_xdnoq")
+
+[node name="SpawnMarkers" type="Node2D" parent="World"]
+
+[node name="DieSpawnPoint" type="Marker2D" parent="World/SpawnMarkers"]
+position = Vector2(-619, 0)
+
+[node name="BlockSpawnPoint" type="Marker2D" parent="World/SpawnMarkers"]
+position = Vector2(606, 0)
+
+[node name="Camera2D" type="Camera2D" parent="World"]
+position = Vector2(0, -100)
+zoom = Vector2(0.2, 0.2)
+script = ExtResource("5_hb57m")
+
+[node name="InputManager" type="Node2D" parent="World"]
+script = ExtResource("6_5tswc")
+
+[node name="PlayerState" type="Node" parent="."]
+script = ExtResource("7_a0626")
+
+[node name="StoreManager" type="Node" parent="."]
+script = ExtResource("8_k1dvx")
+
+[node name="EnemyManager" type="Node" parent="."]
+script = ExtResource("9_nn1lf")
+enemies = Array[ExtResource("10_wkjfx")]([ExtResource("11_ri7dy"), ExtResource("12_y0neb"), ExtResource("13_kksy0"), ExtResource("14_mjw1v"), ExtResource("15_ds2hl")])
+
+[node name="GameFlowManager" type="Node" parent="."]
+script = ExtResource("16_cr2il")
+
+[node name="CombatProcessor" type="Node" parent="."]
+script = ExtResource("17_gejoc")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="UIBridge" type="Node" parent="UI"]
+script = ExtResource("18_2bsex")
+
+[node name="TestingInterface" type="Control" parent="UI"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SpawnBlockButton" type="Button" parent="UI/TestingInterface"]
+layout_mode = 1
+offset_left = 50.0
+offset_top = 50.0
+offset_right = 250.0
+offset_bottom = 130.0
+text = "Spawn Block"
+
+[node name="SpawnDieButton" type="Button" parent="UI/TestingInterface"]
+layout_mode = 1
+offset_left = 506.0
+offset_top = 50.0
+offset_right = 706.0
+offset_bottom = 130.0
+text = "Spawn Die
+"
+
+[node name="TextEdit" type="TextEdit" parent="UI/TestingInterface"]
+layout_mode = 0
+offset_left = 58.0
+offset_top = 142.0
+offset_right = 234.0
+offset_bottom = 175.0
+placeholder_text = "Value for block 1-6"
+
+[node name="DiceTextEdit" type="TextEdit" parent="UI/TestingInterface"]
+layout_mode = 0
+offset_left = 512.0
+offset_top = 142.0
+offset_right = 688.0
+offset_bottom = 175.0
+placeholder_text = "Value for block 1-6"
+
+[node name="Interface" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_2y7ui")
+
+[node name="PlayerHealthPanel" type="Panel" parent="UI/Interface"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -294.0
+offset_top = -224.0
+offset_right = 294.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PlayerHP" type="Label" parent="UI/Interface/PlayerHealthPanel"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -158.0
+offset_top = -141.0
+offset_right = 158.0
+offset_bottom = -72.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.693, 0.9, 0.7068, 1)
+theme_override_font_sizes/font_size = 50
+text = "HP: 15"
+horizontal_alignment = 1
+
+[node name="PlayerBlock" type="Label" parent="UI/Interface/PlayerHealthPanel"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -158.0
+offset_top = -209.0
+offset_right = 158.0
+offset_bottom = -140.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.71, 0.835667, 1, 1)
+theme_override_font_sizes/font_size = 50
+text = "SHIELD 0"
+horizontal_alignment = 1
+
+[node name="DelayedPlayerHealthBar" type="ProgressBar" parent="UI/Interface/PlayerHealthPanel"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -265.0
+offset_top = 164.0
+offset_right = 265.0
+offset_bottom = 194.0
+grow_horizontal = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_vcj8d")
+show_percentage = false
+
+[node name="PlayerHealthBar" type="ProgressBar" parent="UI/Interface/PlayerHealthPanel"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -265.0
+offset_top = -60.0
+offset_right = 265.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/fill = SubResource("StyleBoxFlat_fw4lp")
+step = 1.0
+show_percentage = false
+
+[node name="StartBattle" type="Button" parent="UI/Interface"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 655.0
+offset_top = -158.0
+offset_right = 855.0
+offset_bottom = -78.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Start Battle"
+
+[node name="End Turn" type="Button" parent="UI/Interface"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 657.0
+offset_top = -160.0
+offset_right = 857.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "End Turn"
+
+[node name="RestartGameButton" type="Button" parent="UI/Interface"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -75.0
+offset_right = 200.0
+offset_bottom = 75.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 50
+text = "Restart Game"
+
+[node name="GetMoreBlocksBtn" type="Button" parent="UI/Interface"]
+visible = false
+layout_mode = 1
+offset_left = 1042.0
+offset_top = 50.0
+offset_right = 1242.0
+offset_bottom = 130.0
+text = "Get More Blocks (3g)"
+
+[node name="Coins" type="Label" parent="UI/Interface"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1891.0
+offset_top = 1021.0
+offset_right = -1703.0
+offset_bottom = 1090.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.97, 0.84778, 0.5626, 1)
+theme_override_font_sizes/font_size = 35
+text = "Coins: 3"
+
+[node name="Dice" type="Label" parent="UI/Interface"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1736.0
+offset_top = 1008.0
+offset_right = -1548.0
+offset_bottom = 1077.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 35
+text = "| Dice: 2"
+vertical_alignment = 1
+
+[node name="ShowAddTiles" type="Button" parent="UI/Interface"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 42.0
+offset_right = 100.0
+offset_bottom = 122.0
+grow_horizontal = 2
+text = "Add Slots (1g each)"
+
+[node name="YouWinScreen" type="Panel" parent="UI/Interface"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="YouWinLabel" type="Label" parent="UI/Interface/YouWinScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -34.0
+offset_top = -11.5
+offset_right = 34.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 100
+text = "You Win!"
+
+[node name="BattleInterface" type="Control" parent="UI/Interface"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DelayedHealthBar" type="ProgressBar" parent="UI/Interface/BattleInterface"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 777.0
+offset_top = 111.0
+offset_right = 1095.0
+offset_bottom = 138.0
+grow_horizontal = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_vcj8d")
+show_percentage = false
+
+[node name="EnemyHealthBar" type="ProgressBar" parent="UI/Interface/BattleInterface"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 777.0
+offset_top = 111.0
+offset_right = 1095.0
+offset_bottom = 138.0
+grow_horizontal = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_fw4lp")
+step = 1.0
+show_percentage = false
+
+[node name="EnemyName" type="Label" parent="UI/Interface/BattleInterface"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 756.0
+offset_top = 20.0
+offset_right = 1084.0
+offset_bottom = 79.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 40
+text = "SLIME"
+horizontal_alignment = 1
+
+[node name="EnemyNextMove" type="Label" parent="UI/Interface/BattleInterface"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 763.0
+offset_top = 310.0
+offset_right = 1091.0
+offset_bottom = 365.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 40
+text = "ENEMY DMG"
+horizontal_alignment = 1
+
+[node name="EnemyHP" type="Label" parent="UI/Interface/BattleInterface"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 754.0
+offset_top = 77.0
+offset_right = 1082.0
+offset_bottom = 112.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 24
+text = "ENEMY HP"
+horizontal_alignment = 1
+
+[node name="EnemyImage" type="TextureRect" parent="UI/Interface/BattleInterface"]
+layout_mode = 0
+offset_left = 853.0
+offset_top = 149.0
+offset_right = 1065.0
+offset_bottom = 320.0
+expand_mode = 2
+stretch_mode = 5
+
+[node name="StoreUI" parent="UI" instance=ExtResource("19_nxhey")]
+anchors_preset = 4
+anchor_top = 0.5
+anchor_right = 0.0
+anchor_bottom = 0.5
+offset_left = 253.0
+offset_top = -21.0
+offset_right = 253.0
+offset_bottom = -21.0
+grow_horizontal = 1
+
+[node name="SFX" parent="." instance=ExtResource("20_05os1")]
+
+[connection signal="non_block_or_die_clicked" from="World/InputManager" to="World/BlockManager/Backpack" method="_on_input_manager_non_block_or_die_clicked"]
+[connection signal="coins_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_coins_changed"]
+[connection signal="game_over" from="PlayerState" to="GameFlowManager" method="on_player_health_less_than_zero"]
+[connection signal="health_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_health_changed"]
+[connection signal="max_health_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_max_health_changed"]
+[connection signal="number_of_dice_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_number_of_dice_changed"]
+[connection signal="shield_changed" from="PlayerState" to="UI/UIBridge" method="_on_player_state_shield_changed"]
+[connection signal="slot_purchased" from="StoreManager" to="UI/UIBridge" method="_on_store_manager_slot_purchased"]
+[connection signal="store_opened" from="StoreManager" to="UI/StoreUI" method="open_store"]
+[connection signal="enemy_damage_changed" from="EnemyManager" to="UI/UIBridge" method="_on_enemy_manager_enemy_damage_changed"]
+[connection signal="enemy_health_changed" from="EnemyManager" to="UI/UIBridge" method="_on_enemy_manager_enemy_health_changed"]
+[connection signal="enemy_max_health_set" from="EnemyManager" to="UI/UIBridge" method="set_enemy_max_health"]
+[connection signal="enemy_name_changed" from="EnemyManager" to="UI/UIBridge" method="_on_enemy_manager_enemy_name_changed"]
+[connection signal="game_won" from="EnemyManager" to="GameFlowManager" method="_on_enemy_manager_game_won"]
+[connection signal="slot_purchased" from="UI/UIBridge" to="UI/StoreUI" method="_on_ui_bridge_slot_purchased"]
+[connection signal="pressed" from="UI/TestingInterface/SpawnBlockButton" to="World/BlockManager" method="_on_spawn_block_button_pressed"]
+[connection signal="pressed" from="UI/TestingInterface/SpawnDieButton" to="World/BlockManager" method="_on_spawn_die_button_pressed"]
+[connection signal="pressed" from="UI/Interface/StartBattle" to="UI/UIBridge" method="_on_start_battle_pressed"]
+[connection signal="pressed" from="UI/Interface/End Turn" to="UI/UIBridge" method="_on_end_turn_pressed"]
+[connection signal="pressed" from="UI/Interface/RestartGameButton" to="UI/UIBridge" method="_on_restart_game_button_pressed"]
+[connection signal="pressed" from="UI/Interface/GetMoreBlocksBtn" to="UI/UIBridge" method="_on_get_more_blocks_btn_pressed"]
+[connection signal="pressed" from="UI/Interface/ShowAddTiles" to="UI/UIBridge" method="_on_show_add_tiles_pressed"]
+[connection signal="buy_die_requested" from="UI/StoreUI" to="UI/UIBridge" method="_on_store_ui_buy_die_requested"]
+[connection signal="exit_requested" from="UI/StoreUI" to="UI/UIBridge" method="_on_store_ui_exit_requested"]
+[connection signal="purchase_requested" from="UI/StoreUI" to="UI/UIBridge" method="_on_store_ui_purchase_requested"]
+[connection signal="reroll_requested" from="UI/StoreUI" to="UI/UIBridge" method="_on_store_ui_reroll_requested"]

@@ -9,6 +9,7 @@ var backpack : Backpack
 var combat_processor : CombatProcessor
 var enemy_manager : EnemyManager
 var ui_bridge : UIBridge
+var camera : CameraShake
 
 
 enum GameState {
@@ -45,6 +46,7 @@ func _post_ready() -> void:
 	enemy_manager.set_first_enemy()
 	player_state.setup_game()
 	ui_bridge.show_shop_interface()
+	camera.slide_to_shop_position()
 
 
 func player_turn_over():
@@ -57,6 +59,7 @@ func request_start_game():
 	if current_state == GameState.IDLE:
 		ui_bridge.hide_shop_interface()
 		backpack.hide_add_tiles()
+		camera.slide_to_battle_position()
 		change_state(GameState.PLAYER_TURN_START)
 	else:
 		push_warning("Start Game requested but game already started or not in IDLE state.")
@@ -71,22 +74,21 @@ func start_combat_processing(processing_round: Array[Array]):
 
 
 func _on_combat_processing_complete() -> void:
-	match current_state:
-		GameState.PROCESSING_COMBAT:
-			if enemy_manager.is_enemy_dead:
-				# This assumes the enemy died *during* processing
-				change_state(GameState.IDLE)
-				ui_bridge.show_shop_interface()
-				dice_manager.clear_all_dice()
-				block_manager.reset_all_dice_slots_to_default()
-				player_state.add_coins(enemy_manager.get_coins_dropped())
-				player_state.shield = 0
-				enemy_manager.next_enemy()
-				
-			elif dice_manager.has_remaining_dice():
-				change_state(GameState.PLAYER_INPUT)
-			else:
-				change_state(GameState.ENEMY_TURN)
+	if enemy_manager.is_enemy_dead:
+		change_state(GameState.IDLE)
+		ui_bridge.show_shop_interface()
+		camera.slide_to_shop_position()
+		dice_manager.clear_all_dice()
+		block_manager.reset_all_dice_slots_to_default()
+		player_state.add_coins(enemy_manager.get_coins_dropped())
+		player_state.shield = 0
+		enemy_manager.next_enemy()
+	else:
+		if dice_manager.has_remaining_dice():
+			change_state(GameState.PLAYER_INPUT)
+		else:
+			change_state(GameState.ENEMY_TURN)
+
 
 func is_combat_processing() -> bool:
 	return current_state == GameState.PROCESSING_COMBAT
@@ -169,6 +171,7 @@ func restart_game():
 	
 	# Show the store
 	ui_bridge.show_shop_interface()
+	camera.slide_to_shop_position()
 
 
 func try_end_player_turn():

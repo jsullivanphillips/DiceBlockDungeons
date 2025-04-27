@@ -20,17 +20,12 @@ func _ready():
 	call_deferred("generate_store")
 
 func _load_block_pool():
-	var dir = DirAccess.open("res://Blocks/GeneratedBlocks")
-	if dir:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
-		while file_name != "":
-			if file_name.ends_with(".tres"):
-				var path = "res://Blocks/GeneratedBlocks/" + file_name
-				var res = load(path)
-				if res is BlockResource:
-					block_pool.append(res)
-			file_name = dir.get_next()
+	block_pool.clear()
+	for block_res in BlockLibrary.get_blocks():
+		block_pool.append(block_res)
+
+
+
 
 func generate_store():
 	shop_inventory.clear()
@@ -91,6 +86,7 @@ func purchase_requested(item: BlockResource, slot: StoreSlot):
 		player_state.spend_coins(item_cost)
 		slot_purchased.emit(slot)
 
+
 func buy_die_requested():
 	if player_state.coins >= 6:
 		player_state.spend_coins(6)
@@ -98,6 +94,7 @@ func buy_die_requested():
 		die.min_value = 1
 		die.max_value = 6
 		player_state.add_die(die)
+
 
 func reroll_store():
 	if player_state.coins >= 1: # or whatever cost you want

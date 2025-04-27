@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://bfaofgramkd05"]
+
+[ext_resource type="Script" path="res://Scripts/EnemyData.gd" id="1_0mak3"]
+[ext_resource type="Texture2D" uid="uid://ba3enjpfjmg86" path="res://Enemies/Enemy Sprites/snail.png" id="1_74s1v"]
+
+[resource]
+script = ExtResource("1_0mak3")
+name = "Snail"
+max_health = 8
+damage = 2
+coins_dropped = 6
+image = ExtResource("1_74s1v")

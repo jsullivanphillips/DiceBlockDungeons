@@ -8,6 +8,7 @@ var input_manager : InputManager
 var combat_processor : CombatProcessor
 var backpack : Backpack
 var player_state : PlayerState
+var camera : CameraShake
 
 var block_resources: Array[BlockResource]
 
@@ -16,20 +17,8 @@ func _ready():
 
 
 func load_generated_block_resources():
-	var dir := DirAccess.open("res://Blocks/GeneratedBlocks")
-	if dir:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
-		while file_name != "":
-			if file_name.ends_with(".tres"):
-				var full_path = "res://Blocks/GeneratedBlocks/" + file_name
-				var block_res = load(full_path)
-				if block_res is BlockResource:
-					block_resources.append(block_res)
-			file_name = dir.get_next()
-		dir.list_dir_end()
-	else:
-		push_error("❌ Could not open GeneratedBlocks directory")
+	block_resources = BlockLibrary.get_blocks()
+
 
 
 func spawn_random_block() -> void:
@@ -43,6 +32,7 @@ func spawn_block_from_resource(block_resource: BlockResource) -> void:
 	# position the block
 	add_child(block_scene)
 	block_scene.global_position = block_spawn_point.global_position + Vector2(randf_range(-100, 100), randf_range(-100, 100))
+	block_scene.camera = camera
 	
 	# connect signals
 	block_scene.picked_up.connect(_on_block_picked_up)

@@ -3,6 +3,7 @@ extends Node
 class_name EnemyManager
 
 var player_state : PlayerState
+var ui_bridge : UIBridge
 
 @export var enemy_default_health := 10
 @export var enemy_damage := 3
@@ -40,6 +41,9 @@ func next_enemy():
 		enemy_damage_changed.emit(enemy_damage)
 		enemy_health_changed.emit(0, enemy_health)
 		enemy_name_changed.emit(enemy.name)
+		if enemy.image:
+			ui_bridge.set_enemy_image(enemy.image)
+			ui_bridge.start_enemy_idle_animation()
 	else:
 		game_won.emit()
 
@@ -48,6 +52,7 @@ func run_enemy_turn():
 	if enemy_health <= 0:
 		return  # skip turn if dead
 
+	ui_bridge.play_enemy_attack_animation()
 	await get_tree().create_timer(1.0).timeout
 	player_state.apply_damage(enemy_damage)
 	SFXManager.play_sfx("hit")
@@ -60,7 +65,8 @@ func deal_damage(damage: int):
 	var old_health = enemy_health
 	enemy_health = max(enemy_health - damage, 0)
 	enemy_health_changed.emit(old_health, enemy_health)
-
+	ui_bridge.flash_enemy_red()
 	if enemy_health <= 0:
 		is_enemy_dead = true
 		enemy_died.emit()
+		ui_bridge.stop_enemy_idle_animation()

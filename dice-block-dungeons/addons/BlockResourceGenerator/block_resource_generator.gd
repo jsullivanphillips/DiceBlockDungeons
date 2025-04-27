@@ -4,6 +4,8 @@ extends VBoxContainer
 const Rarity = preload("res://Blocks/Rarity.gd")
 const BlockResource = preload("res://Blocks/BlockResource.gd")
 
+const BlockListGenerator = preload("res://addons/BlockResourceGenerator/block_list_generator.gd")
+
 var SHAPE_IDS := []
 
 @onready var shape_dropdown := $ShapeDropdown
@@ -14,6 +16,7 @@ var SHAPE_IDS := []
 @onready var price_slider := $PriceHBox/PriceSlider
 @onready var status_label := $StatusLabel
 @onready var preview_viewport := $SubViewportContainer/PreviewViewport
+@onready var regenerate_button := $RegenerateButton
 
 @onready var attack_value_label := $AttackHBox/AttackValueLabel
 @onready var shield_value_label := $ShieldHBox/ShieldValueLabel
@@ -27,6 +30,9 @@ func _ready():
 	if not Engine.is_editor_hint():
 		return
 	
+
+	# Connect regenerate button
+	regenerate_button.pressed.connect(_on_regenerate_button_pressed)
 
 	# Populate shape dropdown
 	shape_dropdown.clear()
@@ -72,6 +78,11 @@ func _on_input_changed(_value = null):
 	status_label.text = "🌀 Live Preview: " + resource.display_name
 
 
+func _on_regenerate_button_pressed():
+	BlockListGenerator.generate_block_list_json()
+	status_label.text = "🔁 BlockList regenerated manually!"
+
+
 func _build_block_resource() -> BlockResource:
 	var resource = BlockResource.new()
 
@@ -105,8 +116,10 @@ func _on_save_pressed():
 	var error = ResourceSaver.save(resource, full_path)
 	if error == OK:
 		status_label.text = "💾 Saved to: " + full_path
+		BlockListGenerator.generate_block_list_json()  # <<< ADD THIS LINE
 	else:
 		push_error("❌ Failed to save resource: %s" % error)
+
 
 
 
@@ -146,4 +159,5 @@ func preview_block(resource: BlockResource):
 	var block = block_scene.instantiate()
 	block.setup_from_resource(resource)
 	preview_viewport.add_child(block)
-	block.position = Vector2(512,512) # Let the shape's offset handle it
+	block.scale = Vector2(0.5, 0.5)
+	block.position = Vector2(256,256) # Let the shape's offset handle it

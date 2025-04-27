@@ -1,32 +1,151 @@
-[gd_scene format=3 uid="uid://bw7m1lfymun70"]
+[gd_scene load_steps=3 format=3 uid="uid://bw7m1lfymun70"]
 
-[node name="MainMenu" type="Node2D"]
+[ext_resource type="Script" path="res://Scenes/main_menu.gd" id="1_dxu4s"]
+[ext_resource type="FontFile" uid="uid://dr3ncqx28or4v" path="res://Fonts/Kenney Pixel.ttf" id="2_kewtt"]
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-
-[node name="Game Outline" type="Label" parent="CanvasLayer"]
-offset_left = 20.0
-offset_top = 234.0
-offset_right = 1132.0
-offset_bottom = 413.0
+[node name="MainMenu" type="Control" node_paths=PackedStringArray("tutorial_pages")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_vertical = 4
+script = ExtResource("1_dxu4s")
+tutorial_pages = [NodePath("VBoxContainer2/Game Outline"), NodePath("VBoxContainer2/Shop Phase"), NodePath("VBoxContainer2/Battle Phase"), NodePath("VBoxContainer2/The Twist")]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -166.0
+offset_top = -95.5
+offset_right = 166.0
+offset_bottom = 95.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 25
+
+[node name="GameTitle" type="Label" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+text = "Dice Block Dungeons"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
 size_flags_horizontal = 4
-text = "DICE BLOCK DUNGEONS
-Dungeon Crawler, Dice-Roller, Inventory Management Game
-
-Start with a 4x4 backpack
-Place item 'blocks' into your backpack, rotating as needed to make them fit.
-Each block has i) die slots, and ii) an action.
-On your turn, roll dice and place them into any of your blocks' die slots. Dice are 'consumed' when placed on a die slot. 
-To activate a block's action, you must place dice with a sum equal or greater than the value displayed on the block's dice slots.
-
-THE UNIQUE HOOKS:
-i) If you play a die with a value greater than required on a block, 
-the remaining value 'overflows' into any adjacent dice slots.
-ii) Blocks with more than 1 die slot overflow from all slots on the block.
-
-HAVE FUN!
-"
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_kewtt")
+theme_override_font_sizes/font_size = 60
+text = "DICE BLOCK DUNGEONS"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="StartButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Start Game"
+
+[node name="SettingsButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Settings ( coming soon )"
+
+[node name="ExitButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Exit ( coming soon )"
+
+[node name="VersionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -23.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -578.0
+offset_top = 22.0
+offset_right = 578.0
+offset_bottom = 213.0
+grow_horizontal = 2
+
+[node name="Game Outline" type="Label" parent="VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_kewtt")
+theme_override_font_sizes/font_size = 45
+text = "Welcome, adventurer!
+Beat the 5 enemies to win the game!
+Begin with a humble 4x4 backpack.
+Strategically place item blocks into your pack, rotating and fitting them together."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Shop Phase" type="Label" parent="VBoxContainer2"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_kewtt")
+theme_override_font_sizes/font_size = 45
+text = "💰 SHOP PHASE:
+Spend your hard earned coins to grow stronger. 
+1) Purchase additional backpack slots.
+2) Grab new blocks .
+3) Get an additional die to roll in combat.
+4) Re-roll your shop."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Battle Phase" type="Label" parent="VBoxContainer2"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_kewtt")
+theme_override_font_sizes/font_size = 45
+text = "⚔️ BATTLE PHASE:
+1) Dice automatically roll at the start of your turn.
+2) Slot dice into your backpack's blocks — plan, rotate, and adapt.
+3) Dice are consumed when placed into a die slot.
+4) If the sum of dice placed meets or beats a block’s value, the block activates — launching attacks, shields, or bonus dice!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="The Twist" type="Label" parent="VBoxContainer2"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_kewtt")
+theme_override_font_sizes/font_size = 45
+text = "THE TWIST:
+🎯 Overflow Damage:
+Play a die that's too greater than a blocks value? The extra die value spills into adjacent die slots, setting up devastating combos!
+🔥 Full-Block Overflow:
+Overflow isn't just slot-to-slot — it spreads across the entire block. Chain reactions are yours to master."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NextButton" type="Button" parent="VBoxContainer2"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_kewtt")
+theme_override_font_sizes/font_size = 40
+text = "Next"
+
+[connection signal="pressed" from="VBoxContainer2/NextButton" to="." method="_on_next_button_pressed"]

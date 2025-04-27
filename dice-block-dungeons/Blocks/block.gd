@@ -15,7 +15,7 @@ signal rotated()
 var is_locked : = false
 var dragging: bool = false
 
-@onready var camera: Camera2D = get_viewport().get_camera_2d()
+@onready var camera: CameraShake
 @onready var tilemap: TileMapLayer = $TileMapLayer
 @onready var die_scene : PackedScene = preload("res://Scenes/die.tscn")
 
@@ -79,8 +79,6 @@ func generate_shape_from_resource(block_resource: BlockResource):
 	for cell in tiles:
 		tilemap.set_cell(cell["pos"], 1, Vector2i(cell["tile"], 0))
 	tilemap.position = offset
-
-
 
 
 ##
@@ -307,7 +305,7 @@ func is_being_dragged() -> bool:
 func _input(event: InputEvent):
 	if dragging:
 		if event is InputEventMouseMotion:
-			global_position = camera.get_local_mouse_position()
+			global_position = camera.get_global_mouse_position()
 		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			rotated.emit()
 			rotation_degrees += 90

@@ -10,18 +10,35 @@ script = ExtResource("1_t5bfv")
 [node name="ShapeDropdown" type="OptionButton" parent="."]
 layout_mode = 2
 selected = 0
-item_count = 3
-popup/item_0/text = "L"
-popup/item_1/text = "LongBoy"
+item_count = 11
+popup/item_0/text = "2block_1slot"
+popup/item_1/text = "3long_1slot"
 popup/item_1/id = 1
-popup/item_2/text = "Shuriken"
+popup/item_2/text = "3long_2slots"
 popup/item_2/id = 2
+popup/item_3/text = "L"
+popup/item_3/id = 3
+popup/item_4/text = "LongBoy"
+popup/item_4/id = 4
+popup/item_5/text = "Shuriken"
+popup/item_5/id = 5
+popup/item_6/text = "leftCorner_1cornerslot"
+popup/item_6/id = 6
+popup/item_7/text = "leftCorner_1slot"
+popup/item_7/id = 7
+popup/item_8/text = "s_2slot"
+popup/item_8/id = 8
+popup/item_9/text = "shuriken_1slot"
+popup/item_9/id = 9
+popup/item_10/text = "square_2slot"
+popup/item_10/id = 10
 
 [node name="AttackHBox" type="HBoxContainer" parent="."]
 layout_mode = 2
 
 [node name="AttackValueLabel" type="Label" parent="AttackHBox"]
 layout_mode = 2
+text = "1"
 
 [node name="Attack" type="Label" parent="AttackHBox"]
 layout_mode = 2
@@ -38,6 +55,7 @@ layout_mode = 2
 
 [node name="ShieldValueLabel" type="Label" parent="ShieldHBox"]
 layout_mode = 2
+text = "0"
 
 [node name="Shield" type="Label" parent="ShieldHBox"]
 layout_mode = 2
@@ -54,6 +72,7 @@ layout_mode = 2
 
 [node name="BonusDiceValueLabel" type="Label" parent="BonusDiceHBox"]
 layout_mode = 2
+text = "1"
 
 [node name="BonusDice" type="Label" parent="BonusDiceHBox"]
 layout_mode = 2
@@ -70,6 +89,7 @@ layout_mode = 2
 
 [node name="DiceValueLabel" type="Label" parent="DiceHBox"]
 layout_mode = 2
+text = "1"
 
 [node name="Dice" type="Label" parent="DiceHBox"]
 layout_mode = 2
@@ -87,6 +107,7 @@ layout_mode = 2
 
 [node name="PriceValueLabel" type="Label" parent="PriceHBox"]
 layout_mode = 2
+text = "1"
 
 [node name="Price" type="Label" parent="PriceHBox"]
 layout_mode = 2
@@ -103,16 +124,20 @@ value = 1.0
 layout_mode = 2
 text = "Save Block"
 
+[node name="RegenerateButton" type="Button" parent="."]
+layout_mode = 2
+text = "Regenerate Block List"
+
 [node name="StatusLabel" type="Label" parent="."]
 layout_mode = 2
-text = "🌀 Live Preview: L A1 B0 D1"
+text = "🌀 Live Preview: 2block_1slot A1 B0 D1 DC1"
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="."]
 layout_mode = 2
 
 [node name="PreviewViewport" type="SubViewport" parent="SubViewportContainer"]
 handle_input_locally = false
-size = Vector2i(1080, 1080)
+size = Vector2i(540, 540)
 render_target_update_mode = 4
 
 [node name="shape_edit_dropdown" type="OptionButton" parent="."]

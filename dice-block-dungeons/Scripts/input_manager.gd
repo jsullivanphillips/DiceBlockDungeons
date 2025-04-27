@@ -2,7 +2,7 @@ extends Node2D
 
 class_name InputManager
 
-var camera : Camera2D
+var camera : CameraShake
 var block_manager : BlockManager
 var dice_manager : DiceManager
 var ui_bridge : UIBridge

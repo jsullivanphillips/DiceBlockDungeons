@@ -38,7 +38,7 @@ func drop_object():
 func _input(event: InputEvent):
 	if dragging:
 		if event is InputEventMouseMotion:
-			global_position = camera.get_local_mouse_position()
+			global_position = camera.get_global_mouse_position()
 
 
 func is_being_dragged() -> bool:

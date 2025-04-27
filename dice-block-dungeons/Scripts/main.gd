@@ -59,9 +59,12 @@ func _ready():
 	input_manager.camera = camera
 	combat_processor.camera= camera
 	player_state.camera = camera
+	game_flow_manager.camera = camera
+	block_manager.camera = camera
 	
 	input_manager.ui_bridge = ui_bridge
 	game_flow_manager.ui_bridge = ui_bridge
+	enemy_manager.ui_bridge = ui_bridge
 	
 	store_manager.store_ui = store_ui
 	ui_bridge.store_ui = store_ui

@@ -1,8 +1,8 @@
 extends Resource
 class_name EnemyData
 
-@export var name: String = "Slime"
-@export var max_health: int = 10
-@export var damage: int = 3
-@export var sprite: Texture2D
-@export var coins_dropped: int = 3
+@export var name: String
+@export var max_health: int
+@export var damage: int
+@export var coins_dropped: int
+@export var image: Texture2D

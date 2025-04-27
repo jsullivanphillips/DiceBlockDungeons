@@ -6,6 +6,8 @@ var shake_strength = 0
 var shake_decay = 0
 var random = RandomNumberGenerator.new()
 
+var tween : Tween
+
 func _ready():
 	random.randomize()
 
@@ -25,3 +27,32 @@ func shake(strength = 10, decay = 5):
 
 func _on_battle_manager_enemy_took_damage(_damage) -> void:
 	shake()
+
+
+func slide_to_battle_position():
+	if tween and tween.is_running():
+		tween.kill()
+	tween = create_tween()
+	tween.tween_property(self, "position", Vector2(0, -100), 0.6)\
+		.set_trans(Tween.TRANS_SINE)\
+		.set_ease(Tween.EASE_OUT)
+	
+	tween.tween_interval(0.1) # short delay
+	
+	tween.tween_property(self, "zoom", Vector2(0.6, 0.6), 0.6)\
+		.set_trans(Tween.TRANS_SINE)\
+		.set_ease(Tween.EASE_OUT)
+
+func slide_to_shop_position():
+	if tween and tween.is_running():
+		tween.kill()
+	tween = create_tween()
+	tween.tween_property(self, "position", Vector2(0, 0), 0.6)\
+		.set_trans(Tween.TRANS_SINE)\
+		.set_ease(Tween.EASE_OUT)
+	
+	tween.tween_interval(0.1) # short delay
+	
+	tween.tween_property(self, "zoom", Vector2(0.7, 0.7), 0.6)\
+		.set_trans(Tween.TRANS_SINE)\
+		.set_ease(Tween.EASE_OUT)
