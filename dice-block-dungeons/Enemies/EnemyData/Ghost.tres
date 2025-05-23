@@ -8,5 +8,5 @@ script = ExtResource("1_ivmrv")
 name = "Ghost"
 max_health = 12
 damage = 4
-coins_dropped = 7
+coins_dropped = 2
 image = ExtResource("1_4mm7b")

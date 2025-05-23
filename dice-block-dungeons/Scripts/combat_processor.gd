@@ -24,6 +24,7 @@ func _on_block_activated(block : Block) -> void:
 	
 	if block.bonus_dice_value > 0:
 		dice_manager.spawn_die(randi_range(1,block.dice_slots_default_value))
+		block_manager.draw_block_from_draw_pile()
 
 func process_die_drop(blocks_and_values: Array[Array]) -> void:
 	# Register blocks for countdown

@@ -10,6 +10,7 @@ signal activated(block)
 signal countdown_complete(block : Block, overflow_value : int)
 signal counted_down()
 signal rotated()
+signal fully_resolved(block: Block)
 
 # Variables
 var is_locked : = false
@@ -201,6 +202,8 @@ func die_placed_in_slot(die_value : int) -> void:
 		dice_slots_value = end_value
 	 
 	countdown_complete.emit(self, overflow_value)
+	if end_value == 0:
+		fully_resolved.emit(self)
 	
 	is_locked = false
 
@@ -278,6 +281,11 @@ func is_position_a_die_slot(p_global_position : Vector2) -> bool:
 		var tile_type = tilemap.get_cell_atlas_coords(tile_coord)
 		return tile_type.x > 0 and tile_type.x < 7
 	return false
+
+func slide_into_position(target_position: Vector2) -> void:
+	var tween := create_tween()
+	tween.tween_property(self, "global_position", target_position, 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
 
 
 ##

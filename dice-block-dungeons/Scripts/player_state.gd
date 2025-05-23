@@ -3,12 +3,13 @@ extends Node
 class_name PlayerState
 
 var camera : CameraShake
+var block_manager : BlockManager
 
 func restart_game():
 	setup_game()
 
 func setup_game():
-	set_starting_coins(10)
+	set_starting_coins(1)
 	setup_initial_dice()
 	shield = 0
 	health = max_health
@@ -96,6 +97,64 @@ func get_random_die() -> DieData:
 		return null
 	return dice_inventory.pick_random()
 
+
+#
+# Block Deck System (Deckbuilder Prototype)
+#
+var block_deck: Array[BlockResource] = []
+var block_draw_pile: Array[BlockResource] = []
+var block_discard_pile: Array[BlockResource] = []
+var current_hand: Array[BlockResource] = []
+
+func initialize_block_deck(starting_blocks: Array[BlockResource]) -> void:
+	block_deck = starting_blocks.duplicate()
+	block_draw_pile = block_deck.duplicate()
+	block_draw_pile.shuffle()
+	block_discard_pile.clear()
+	current_hand.clear()
+
+
+func draw_blocks(num: int) -> void:
+	for i in range(num):
+		if block_draw_pile.is_empty():
+			reshuffle_discard_into_draw()
+		if not block_draw_pile.is_empty():
+			var block = block_draw_pile.pop_back()
+			current_hand.append(block)
+	print("drew ", num, " blocks: ", current_hand)
+
+
+func add_block_to_hand(block: BlockResource) -> void:
+	current_hand.append(block)
+
+
+func reshuffle_discard_into_draw() -> void:
+	block_draw_pile = block_discard_pile.duplicate()
+	block_draw_pile.shuffle()
+	block_discard_pile.clear()
+
+
+func discard_block(block: BlockResource) -> void:
+	if current_hand.has(block):
+		current_hand.erase(block)
+		block_discard_pile.append(block)
+
+
+func reset_block_deck() -> void:
+	block_draw_pile.clear()
+	block_discard_pile.clear()
+	current_hand.clear()
+
+
+func discard_unused_hand_blocks() -> void:
+	for block in current_hand:
+		var instance := block_manager.find_block_instance_with_resource(block)
+		if instance and is_instance_valid(instance):
+			instance.queue_free()
+		block_discard_pile.append(block)
+	current_hand.clear()
+
+
 #
 # Coins
 #
@@ -109,11 +168,13 @@ var coins: int = 5:
 			coins_changed.emit(old, coins)
 
 func set_starting_coins(p_coins : int) -> void:
+	print_stack()
 	coins = p_coins
 
 
 func add_coins(amount: int) -> void:
 	for i in range(amount):
+		print_stack()
 		coins += 1
 		SFXManager.play_sfx("coin")  # Plays your coin sound
 		coins_changed.emit(coins - 1, coins)  # Optional: notify UI

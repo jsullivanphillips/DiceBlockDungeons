@@ -34,9 +34,7 @@ const GameStateNames = {
 	
 }
 
-
 var current_state: GameState = GameState.IDLE
-
 
 func _ready() -> void:
 	call_deferred("_post_ready")
@@ -52,6 +50,7 @@ func _post_ready() -> void:
 func player_turn_over():
 	if current_state == GameState.IDLE:
 		return
+	player_state.discard_unused_hand_blocks()
 	change_state(GameState.ENEMY_TURN)
 
 
@@ -60,6 +59,7 @@ func request_start_game():
 		ui_bridge.hide_shop_interface()
 		backpack.hide_add_tiles()
 		camera.slide_to_battle_position()
+		player_state.initialize_block_deck(block_manager.starting_blocks_array)
 		change_state(GameState.PLAYER_TURN_START)
 	else:
 		push_warning("Start Game requested but game already started or not in IDLE state.")
@@ -80,6 +80,8 @@ func _on_combat_processing_complete() -> void:
 		camera.slide_to_shop_position()
 		dice_manager.clear_all_dice()
 		block_manager.reset_all_dice_slots_to_default()
+		block_manager.clear_all_blocks()
+		player_state.reset_block_deck()
 		player_state.add_coins(enemy_manager.get_coins_dropped())
 		player_state.shield = 0
 		enemy_manager.next_enemy()
@@ -87,7 +89,7 @@ func _on_combat_processing_complete() -> void:
 		if dice_manager.has_remaining_dice():
 			change_state(GameState.PLAYER_INPUT)
 		else:
-			change_state(GameState.ENEMY_TURN)
+			player_turn_over()
 
 
 func is_combat_processing() -> bool:
@@ -107,7 +109,7 @@ func change_state(new_state: GameState) -> void:
 	
 	match current_state:
 		GameState.PLAYER_TURN_START:
-			await dice_manager.spawn_player_dice()
+			await start_player_turn()
 			change_state(GameState.PLAYER_INPUT)
 
 		GameState.PLAYER_INPUT:
@@ -131,6 +133,9 @@ func change_state(new_state: GameState) -> void:
 
 func start_player_turn() -> void:
 	await dice_manager.spawn_player_dice()
+	player_state.draw_blocks(3)
+	for block in player_state.current_hand:
+		block_manager.spawn_block_from_resource(block, true)  # true = spawn into hand
 	change_state(GameState.PLAYER_INPUT)
 
 
@@ -163,8 +168,6 @@ func restart_game():
 	dice_manager.clear_all_dice()
 	
 	player_state.restart_game()
-	player_state.coins = 5
-	player_state.shield = 0
 
 	# Reset the backpack
 	backpack.reset_backpack()

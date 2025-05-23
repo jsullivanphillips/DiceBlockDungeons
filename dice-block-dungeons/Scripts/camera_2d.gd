@@ -33,13 +33,13 @@ func slide_to_battle_position():
 	if tween and tween.is_running():
 		tween.kill()
 	tween = create_tween()
-	tween.tween_property(self, "position", Vector2(0, -100), 0.6)\
+	tween.tween_property(self, "position", Vector2(0, 0), 0.6)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_OUT)
 	
 	tween.tween_interval(0.1) # short delay
 	
-	tween.tween_property(self, "zoom", Vector2(0.6, 0.6), 0.6)\
+	tween.tween_property(self, "zoom", Vector2(0.8, 0.8), 0.6)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_OUT)
 
@@ -53,6 +53,6 @@ func slide_to_shop_position():
 	
 	tween.tween_interval(0.1) # short delay
 	
-	tween.tween_property(self, "zoom", Vector2(0.7, 0.7), 0.6)\
+	tween.tween_property(self, "zoom", Vector2(0.9, 0.9), 0.6)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_OUT)

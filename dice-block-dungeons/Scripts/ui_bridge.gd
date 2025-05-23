@@ -73,7 +73,7 @@ func open_store() -> void:
 	store_manager.generate_store()
 
 func show_shop_interface() -> void:
-	open_store()
+	#open_store()
 	set_start_battle_visibility(true)
 	set_end_turn_visibility(false)
 	set_add_tiles_visibility(true)

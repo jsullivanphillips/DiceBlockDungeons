@@ -34,6 +34,7 @@ func _ready():
 	input_manager.block_manager = block_manager
 	ui_bridge.block_manager = block_manager
 	store_manager.block_manager = block_manager
+	player_state.block_manager = block_manager
 	
 	block_manager.player_state = player_state
 	game_flow_manager.player_state = player_state
@@ -42,7 +43,6 @@ func _ready():
 	combat_processor.player_state = player_state
 	enemy_manager.player_state = player_state
 	store_manager.player_state = player_state
-	
 	
 	block_manager.backpack = backpack
 	game_flow_manager.backpack = backpack

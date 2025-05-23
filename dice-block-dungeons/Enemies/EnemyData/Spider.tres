@@ -8,5 +8,5 @@ script = ExtResource("1_mo2pa")
 name = "Spider"
 max_health = 25
 damage = 5
-coins_dropped = 15
+coins_dropped = 5
 image = ExtResource("1_40p76")

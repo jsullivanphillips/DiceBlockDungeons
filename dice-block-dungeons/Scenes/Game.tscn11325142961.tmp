@@ -302,10 +302,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 1)
+color = Color(0.34, 0.291833, 0.2822, 1)
 
 [node name="TextureRect" type="TextureRect" parent="Background"]
-modulate = Color(0.62, 1, 0.911333, 0.921569)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -330,7 +329,7 @@ script = ExtResource("4_xdnoq")
 [node name="SpawnMarkers" type="Node2D" parent="World"]
 
 [node name="DieSpawnPoint" type="Marker2D" parent="World/SpawnMarkers"]
-position = Vector2(4, 362)
+position = Vector2(-619, 0)
 
 [node name="BlockSpawnPoint" type="Marker2D" parent="World/SpawnMarkers"]
 position = Vector2(606, 0)

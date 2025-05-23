@@ -8,5 +8,5 @@ script = ExtResource("1_r0wor")
 name = "Slime"
 max_health = 17
 damage = 3
-coins_dropped = 8
+coins_dropped = 3
 image = ExtResource("1_8g6ka")

@@ -29,5 +29,6 @@ sources/1 = SubResource("TileSetAtlasSource_jdj0r")
 script = ExtResource("1_cae2i")
 
 [node name="Backpack" type="TileMapLayer" parent="."]
+modulate = Color(0, 0, 0, 1)
 tile_map_data = PackedByteArray("AAD/////AQADAAcAAAAAAP//AQADAAcAAAAAAAAAAQADAAcAAAD//wAAAQADAAcAAAD///7/AQADAAcAAAAAAP7/AQADAAcAAAAAAAEAAQADAAcAAAD//wEAAQADAAcAAAD+/wEAAQADAAcAAAD+/wAAAQADAAcAAAD+////AQADAAcAAAD+//7/AQADAAcAAAABAP7/AQADAAcAAAABAP//AQADAAcAAAABAAAAAQADAAcAAAABAAEAAQADAAcAAAA=")
 tile_set = SubResource("TileSet_a6w4h")

@@ -8,5 +8,5 @@ script = ExtResource("2_uwp67")
 name = "Bat"
 max_health = 5
 damage = 1
-coins_dropped = 5
+coins_dropped = 1
 image = ExtResource("1_lj33p")
