@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Dice Block Dungeons"
 run/main_scene="res://Scenes/main_menu.tscn"
-config/features=PackedStringArray("4.3", "Forward Plus")
+config/features=PackedStringArray("4.4", "Forward Plus")
 boot_splash/bg_color=Color(0.157879, 0.117542, 0.212313, 1)
 
 [autoload]

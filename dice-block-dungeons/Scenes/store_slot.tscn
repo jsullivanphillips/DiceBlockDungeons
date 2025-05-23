@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://du7m06iryf8y2"]
 
-[ext_resource type="Script" path="res://Scripts/store_slot.gd" id="1_ot5id"]
+[ext_resource type="Script" uid="uid://4063qxavewnq" path="res://Scripts/store_slot.gd" id="1_ot5id"]
 
 [node name="StoreSlot" type="VBoxContainer"]
 custom_minimum_size = Vector2(400, 200)

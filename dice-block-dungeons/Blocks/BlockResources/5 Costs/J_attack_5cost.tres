@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BlockResource" load_steps=3 format=3 uid="uid://ca3ngg0wtwuqa"]
 
 [ext_resource type="PackedScene" uid="uid://210uidd5twrc" path="res://Blocks/block.tscn" id="1_iaqw1"]
-[ext_resource type="Script" path="res://Blocks/BlockResource.gd" id="2_otu5d"]
+[ext_resource type="Script" uid="uid://cu2v8s475nysk" path="res://Blocks/BlockResource.gd" id="2_otu5d"]
 
 [resource]
 script = ExtResource("2_otu5d")
@@ -12,5 +12,6 @@ rarity = 0
 dice_cost = 5
 attack = 3
 shield = 0
+bonus_dice = 0
 description = "3 damage, costs 5"
 price = 2

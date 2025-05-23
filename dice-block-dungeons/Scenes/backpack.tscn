@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=4 uid="uid://dmgddsls2wgwn"]
 
 [ext_resource type="Texture2D" uid="uid://leibr6n4pbo2" path="res://kenney_board-game-icons/Tilesheet/iconsDouble.png" id="1_5quxc"]
-[ext_resource type="Script" path="res://Scripts/backpack.gd" id="1_cae2i"]
+[ext_resource type="Script" uid="uid://dcwxvk56m1qxi" path="res://Scripts/backpack.gd" id="1_cae2i"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_jdj0r"]
 resource_name = "DiceBlockDungeon1"

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cpbg8qcap15kw"]
 
-[ext_resource type="Script" path="res://addons/shape_editor/shape_editor.gd" id="1_bs1u5"]
+[ext_resource type="Script" uid="uid://dw05cdgrcbwyk" path="res://addons/shape_editor/shape_editor.gd" id="1_bs1u5"]
 
 [node name="ShapeEditor" type="VBoxContainer"]
 script = ExtResource("1_bs1u5")

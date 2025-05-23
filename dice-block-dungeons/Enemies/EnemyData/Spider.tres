@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://cxq2bgsj64gk2"]
 
 [ext_resource type="Texture2D" uid="uid://cwthltdk10neh" path="res://Enemies/Enemy Sprites/spider.png" id="1_40p76"]
-[ext_resource type="Script" path="res://Scripts/EnemyData.gd" id="1_mo2pa"]
+[ext_resource type="Script" uid="uid://dow5qejgxuo23" path="res://Scripts/EnemyData.gd" id="1_mo2pa"]
 
 [resource]
 script = ExtResource("1_mo2pa")

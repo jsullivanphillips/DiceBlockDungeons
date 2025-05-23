@@ -76,8 +76,8 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_7u35x"]
 _data = {
-"RESET": SubResource("Animation_slpgv"),
-"float": SubResource("Animation_4nets")
+&"RESET": SubResource("Animation_slpgv"),
+&"float": SubResource("Animation_4nets")
 }
 
 [node name="DamageNumber" type="Node2D"]

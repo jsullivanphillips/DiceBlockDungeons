@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://xjpdtddgoynt"]
 
-[ext_resource type="Script" path="res://addons/BlockResourceGenerator/block_resource_generator.gd" id="1_t5bfv"]
+[ext_resource type="Script" uid="uid://cr5yqtahxdqam" path="res://addons/BlockResourceGenerator/block_resource_generator.gd" id="1_t5bfv"]
 
 [node name="BlockResourceGenerator" type="VBoxContainer"]
 offset_right = 512.0

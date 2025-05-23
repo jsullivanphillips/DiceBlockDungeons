@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://dh2y2yw450xuh"]
 
-[ext_resource type="Script" path="res://SFX/sfx_manager.gd" id="1_b7tf1"]
+[ext_resource type="Script" uid="uid://djl06g0s2wjda" path="res://SFX/sfx_manager.gd" id="1_b7tf1"]
 [ext_resource type="AudioStream" uid="uid://f4q7pdfa8eew" path="res://SFX/Zapsplat SFX/new_dice.mp3" id="2_xn3la"]
 [ext_resource type="AudioStream" uid="uid://dd5kj8v7ek832" path="res://SFX/Zapsplat SFX/pick_up_block.mp3" id="3_6whvy"]
 [ext_resource type="AudioStream" uid="uid://bsnqhbw8u5n4k" path="res://SFX/Zapsplat SFX/drop_block.mp3" id="4_dc441"]

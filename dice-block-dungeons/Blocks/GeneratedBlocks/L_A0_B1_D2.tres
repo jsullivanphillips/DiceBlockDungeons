@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BlockResource" load_steps=3 format=3 uid="uid://c5jp7q3ydw0y2"]
 
 [ext_resource type="PackedScene" uid="uid://210uidd5twrc" path="res://Blocks/block.tscn" id="1_j0yxc"]
-[ext_resource type="Script" path="res://Blocks/BlockResource.gd" id="2_fsv61"]
+[ext_resource type="Script" uid="uid://cu2v8s475nysk" path="res://Blocks/BlockResource.gd" id="2_fsv61"]
 
 [resource]
 script = ExtResource("2_fsv61")
