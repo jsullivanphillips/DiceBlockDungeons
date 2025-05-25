@@ -10,11 +10,11 @@ signal activated(block)
 signal countdown_complete(block : Block, overflow_value : int)
 signal counted_down()
 signal rotated()
-signal fully_resolved(block: Block)
 
 # Variables
 var is_locked : = false
 var dragging: bool = false
+var is_in_play: bool = false
 
 @onready var camera: CameraShake
 @onready var tilemap: TileMapLayer = $TileMapLayer
@@ -66,9 +66,9 @@ func set_stats_from_resource(block_resource: BlockResource):
 		stat_label.text = ""
 	
 	if damage_value > 0:
-		tilemap.modulate = Color.from_hsv(0, 0.6, 0.9)
+		tilemap.modulate = Color.from_hsv(0, 0.5, 0.9)
 	elif block_value > 0:
-		tilemap.modulate = Color.from_hsv(0.6, 0.6, 0.9)
+		tilemap.modulate = Color.from_hsv(0.6, 0.5, 0.9)
 	elif bonus_dice_value > 0:
 		tilemap.modulate = Color.from_hsv(0.3, 0.5, 0.9)
 
@@ -88,10 +88,11 @@ func generate_shape_from_resource(block_resource: BlockResource):
 # Activate the block with visual effects
 func activate() -> void:
 	activated.emit(self)
+	is_in_play = true
+	show_in_play_visual()
+	# Change saturation to full saturation to indicate the block is in play
 	var old_color = tilemap.modulate
-	var modified_color = old_color
-	modified_color.s = 0.2
-	modified_color.v = 0.95
+	var modified_color = Color.from_hsv(old_color.h, 0.9, 0.95, old_color.a)
 
 	var tween = get_tree().create_tween()
 
@@ -119,6 +120,37 @@ func activate() -> void:
 	await tween_back.finished
 
 	reset_to_default_values()
+
+
+func show_in_play_visual():
+	# Get current HSV values
+	var base_color := tilemap.modulate
+	var h = base_color.h
+	var s = base_color.s
+	var v = base_color.v
+	var a = base_color.a
+
+	# Boost saturation slightly and clamp
+	var boosted_color := Color.from_hsv(h, clamp(s + 0.4, 0, 1), v, a)
+	tilemap.modulate = boosted_color
+
+
+func play_discard_animation():
+	var tween := create_tween()
+
+	var up_pos := global_position + Vector2(0, -50)
+	var exit_pos := get_viewport_rect().size + Vector2(100, 100)  # bottom right, offscreen
+	var shrink_scale := scale * 0.1
+
+	# Move up slightly
+	tween.tween_property(self, "global_position", up_pos, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+	# Then fly and shrink
+	tween.tween_property(self, "global_position", exit_pos, 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.parallel().tween_property(self, "scale", shrink_scale, 0.4).set_trans(Tween.TRANS_SINE)
+
+	await tween.finished
+	queue_free()
 
 
 # Change color of the block to a darker shade with a "pop" effect
@@ -202,8 +234,6 @@ func die_placed_in_slot(die_value : int) -> void:
 		dice_slots_value = end_value
 	 
 	countdown_complete.emit(self, overflow_value)
-	if end_value == 0:
-		fully_resolved.emit(self)
 	
 	is_locked = false
 
@@ -282,9 +312,18 @@ func is_position_a_die_slot(p_global_position : Vector2) -> bool:
 		return tile_type.x > 0 and tile_type.x < 7
 	return false
 
+
 func slide_into_position(target_position: Vector2) -> void:
+	# Start smaller
+	scale = Vector2(0.1, 0.1)
+
 	var tween := create_tween()
+
+	# Slide into position
 	tween.tween_property(self, "global_position", target_position, 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+	# Grow to full size in parallel
+	tween.parallel().tween_property(self, "scale", Vector2(1, 1), 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 

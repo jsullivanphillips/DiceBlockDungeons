@@ -50,7 +50,6 @@ func spawn_block_from_resource(block_resource: BlockResource, into_hand := false
 	block_scene.counted_down.connect(_on_block_counted_down)
 	block_scene.activated.connect(combat_processor._on_block_activated)
 	block_scene.activated.connect(_on_block_activated)
-	block_scene.fully_resolved.connect(_on_block_fully_resolved)
 
 	# Meta-data and setup
 	block_scene.name = block_resource.display_name
@@ -121,18 +120,6 @@ func draw_next_block_from_deck() -> BlockResource:
 	if not player_state.block_draw_pile.is_empty():
 		return player_state.block_draw_pile.pop_back()
 	return null
-
-
-func _on_block_fully_resolved(block: Block) -> void:
-	var resource: BlockResource = block.get_meta("resource")
-
-	# Prevent double discards
-	if player_state.current_hand.has(resource):
-		player_state.current_hand.erase(resource)
-	player_state.block_discard_pile.append(resource)
-	backpack.set_tiles_unoccupied(block.get_tile_global_positions())
-
-	block.queue_free()
 
 
 func bring_block_to_front(block : Node2D):

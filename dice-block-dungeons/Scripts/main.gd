@@ -47,6 +47,7 @@ func _ready():
 	block_manager.backpack = backpack
 	game_flow_manager.backpack = backpack
 	ui_bridge.backpack = backpack
+	player_state.backpack = backpack
 	
 	combat_processor.enemy_manager = enemy_manager
 	game_flow_manager.enemy_manager = enemy_manager

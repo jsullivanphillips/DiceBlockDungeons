@@ -4,6 +4,7 @@ class_name PlayerState
 
 var camera : CameraShake
 var block_manager : BlockManager
+var backpack : Backpack
 
 func restart_game():
 	setup_game()
@@ -121,7 +122,6 @@ func draw_blocks(num: int) -> void:
 		if not block_draw_pile.is_empty():
 			var block = block_draw_pile.pop_back()
 			current_hand.append(block)
-	print("drew ", num, " blocks: ", current_hand)
 
 
 func add_block_to_hand(block: BlockResource) -> void:
@@ -134,12 +134,6 @@ func reshuffle_discard_into_draw() -> void:
 	block_discard_pile.clear()
 
 
-func discard_block(block: BlockResource) -> void:
-	if current_hand.has(block):
-		current_hand.erase(block)
-		block_discard_pile.append(block)
-
-
 func reset_block_deck() -> void:
 	block_draw_pile.clear()
 	block_discard_pile.clear()
@@ -147,12 +141,24 @@ func reset_block_deck() -> void:
 
 
 func discard_unused_hand_blocks() -> void:
+	# Discard any blocks that were drawn but never placed
 	for block in current_hand:
 		var instance := block_manager.find_block_instance_with_resource(block)
 		if instance and is_instance_valid(instance):
-			instance.queue_free()
+			instance.play_discard_animation()
+			await get_tree().create_timer(0.15).timeout
 		block_discard_pile.append(block)
 	current_hand.clear()
+
+	# Discard any blocks that were placed and activated (in_play)
+	for block_node in get_tree().get_nodes_in_group("Blocks"):
+		if block_node is Block and block_node.is_in_play:
+			var resource: BlockResource = block_node.get_meta("resource")
+			block_discard_pile.append(resource)
+			if block_node.is_slotted:
+				backpack.set_tiles_unoccupied(block_node.get_tile_global_positions())
+			block_node.play_discard_animation()
+			await get_tree().create_timer(0.15).timeout
 
 
 #
@@ -168,13 +174,11 @@ var coins: int = 5:
 			coins_changed.emit(old, coins)
 
 func set_starting_coins(p_coins : int) -> void:
-	print_stack()
 	coins = p_coins
 
 
 func add_coins(amount: int) -> void:
 	for i in range(amount):
-		print_stack()
 		coins += 1
 		SFXManager.play_sfx("coin")  # Plays your coin sound
 		coins_changed.emit(coins - 1, coins)  # Optional: notify UI
